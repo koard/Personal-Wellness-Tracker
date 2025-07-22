@@ -1,0 +1,32 @@
+name: wellness
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.25.4
+  firebase_auth: ^4.17.4
+
+  # Riverpod for state management
+  flutter_riverpod: ^2.5.1
+
+  # Custom fonts
+  google_fonts: ^6.1.0
+
+  # Optional: For clean routing
+  go_router: ^13.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

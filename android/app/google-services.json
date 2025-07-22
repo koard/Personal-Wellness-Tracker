@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "831442551082",
+    "project_id": "personal-wellness-tracke-5d443",
+    "storage_bucket": "personal-wellness-tracke-5d443.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:831442551082:android:508193ba38343a281d5e53",
+        "android_client_info": {
+          "package_name": "com.example.wellness"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACAgdQFCh8KuFuXYDIgT6LH8tnkbH2kdg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
