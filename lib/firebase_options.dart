@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'config/env_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -52,11 +53,13 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyACAgdQFCh8KuFuXYDIgT6LH8tnkbH2kdg',
-    appId: '1:831442551082:android:508193ba38343a281d5e53',
-    messagingSenderId: '831442551082',
-    projectId: 'personal-wellness-tracke-5d443',
-    storageBucket: 'personal-wellness-tracke-5d443.firebasestorage.app',
-  );
+  static FirebaseOptions get android {
+    return FirebaseOptions(
+      apiKey: EnvConfig.firebaseApiKey,
+      appId: EnvConfig.firebaseAppId,
+      messagingSenderId: EnvConfig.firebaseMessagingSenderId,
+      projectId: EnvConfig.firebaseProjectId,
+      storageBucket: EnvConfig.firebaseStorageBucket,
+    );
+  }
 }

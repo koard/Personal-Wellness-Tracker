@@ -23,6 +23,9 @@ dependencies:
   # Optional: For clean routing
   go_router: ^13.2.1
 
+  # Environment variables
+  flutter_dotenv: ^5.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -30,3 +33,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  assets:
+    - .env
