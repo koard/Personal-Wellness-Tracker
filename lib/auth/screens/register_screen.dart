@@ -26,12 +26,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           );
       setState(() => isLoading = false);
 
-      if (success) {
-        Navigator.pushReplacementNamed(context, '/onboarding');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration failed.')),
-        );
+      if (mounted) {
+        if (success) {
+          Navigator.pushReplacementNamed(context, '/onboarding');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registration failed.')),
+          );
+        }
       }
     }
   }

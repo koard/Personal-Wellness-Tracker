@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer' as developer;
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
@@ -11,7 +12,7 @@ class AuthService {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return true;
     } catch (e) {
-      print('Login error: $e');
+      developer.log('Login error: $e', name: 'AuthService');
       return false;
     }
   }
@@ -21,7 +22,7 @@ class AuthService {
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
       return true;
     } catch (e) {
-      print('Register error: $e');
+      developer.log('Register error: $e', name: 'AuthService');
       return false;
     }
   }

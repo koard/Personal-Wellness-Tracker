@@ -24,12 +24,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             password: passwordCtrl.text.trim(),
           );
       setState(() => isLoading = false);
-      if (success) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed. Please try again.')),
-        );
+      if (mounted) {
+        if (success) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login failed. Please try again.')),
+          );
+        }
       }
     }
   }
