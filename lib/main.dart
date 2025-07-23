@@ -4,7 +4,7 @@ import 'firebase_options.dart';
 import 'config/env_config.dart';
 import 'auth/screens/login_screen.dart'; // ชั่วคราว ใช้ login เป็น home ก่อน
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'auth/screens/register_screen.dart';
 import 'dashboard/screens/dashboard_screen.dart'; // สมมุติหน้าหลักหลังล็อกอิน
 import 'providers/auth_provider.dart';
 
@@ -32,17 +32,23 @@ class MyApp extends ConsumerWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      routes: {
+        '/register': (context) => const RegisterScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+        // '/onboarding': (context) => const OnboardingScreen(), // ภายหลัง
+      },
       home: authState.when(
         data: (user) {
           if (user != null) {
-            return const DashboardScreen(); // ✅ เข้าระบบแล้ว
+            return const DashboardScreen();
           } else {
-            return const LoginScreen(); // ❌ ยังไม่ได้ login
+            return const LoginScreen();
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => const Center(child: Text('Error loading user')),
       ),
     );
+      
   }
 }
