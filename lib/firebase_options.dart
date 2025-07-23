@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -59,4 +56,15 @@ class DefaultFirebaseOptions {
     projectId: 'personal-wellness-tracke-5d443',
     storageBucket: 'personal-wellness-tracke-5d443.firebasestorage.app',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCwJUgfCPxd9ay35DKut_fvPKzE8gJQBeA',
+    appId: '1:831442551082:web:72000cf15d38d8a51d5e53',
+    messagingSenderId: '831442551082',
+    projectId: 'personal-wellness-tracke-5d443',
+    authDomain: 'personal-wellness-tracke-5d443.firebaseapp.com',
+    storageBucket: 'personal-wellness-tracke-5d443.firebasestorage.app',
+    measurementId: 'G-73QVKY9LPG',
+  );
+
 }
