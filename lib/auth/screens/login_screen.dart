@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
-import '../../dashboard/screens/dashboard_screen.dart';
+import '../../authed/authed_layout.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -31,7 +31,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (success) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const AuthedLayout(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

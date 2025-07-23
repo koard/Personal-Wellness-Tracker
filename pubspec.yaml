@@ -26,12 +26,21 @@ dependencies:
   # Environment variables
   flutter_dotenv: ^5.1.0
 
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+  # For storing language preferences
+  shared_preferences: ^2.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
 
 flutter:
+  generate: true
   uses-material-design: true
   
   assets:

@@ -3,15 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/language_provider.dart';
+import '../../widgets/bottom_navigation_island.dart';
 
-class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({super.key});
+class DashboardPage extends ConsumerStatefulWidget {
+  const DashboardPage({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class _DashboardPageState extends ConsumerState<DashboardPage> {
   int currentCalories = 1500;
   int targetCalories = 2000;
   int currentWater = 6;
@@ -25,9 +26,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             // Greeting
@@ -39,99 +42,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 24),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.notifications_outlined, color: Colors.amber),
-              onPressed: () {},
-            ),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.grey[600], size: 20),
-            ),
-          ],
-        ),
-        actions: [
-          PopupMenuButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.language),
-                  title: Text(l10n.commonEnglish),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ref.read(languageProvider.notifier).changeLanguage('en');
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.language),
-                  title: Text(l10n.commonThai),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ref.read(languageProvider.notifier).changeLanguage('th');
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text(l10n.commonLogout),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await FirebaseAuth.instance.signOut();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: DashboardContent(),
-    );
-  }
-}
-
-// Extracted content widget for use in main navigation
-class DashboardContent extends ConsumerStatefulWidget {
-  const DashboardContent({super.key});
-
-  @override
-  ConsumerState<DashboardContent> createState() => _DashboardContentState();
-}
-
-class _DashboardContentState extends ConsumerState<DashboardContent> {
-  int currentCalories = 1500;
-  int targetCalories = 2000;
-  int currentWater = 6;
-  int targetWater = 8;
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
-    final l10n = AppLocalizations.of(context)!;
-    
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
-          children: [
-            // Greeting
-            Text(
-              l10n.dashboardGoodMorning(userName.toUpperCase()),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 24),
             Spacer(),
             IconButton(
               icon: Icon(Icons.notifications_outlined, color: Colors.amber),
@@ -187,7 +97,7 @@ class _DashboardContentState extends ConsumerState<DashboardContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting
+            // Dashboard Title
             Text(
               l10n.dashboardTitle,
               style: TextStyle(
@@ -280,13 +190,14 @@ class _DashboardContentState extends ConsumerState<DashboardContent> {
 
             _buildHabitCard('Exercise 1', l10n.dashboardDaysStreak(10), true), // Mock data for exercise name
             SizedBox(height: 8),
-            _buildHabitCard('Exercise 1', l10n.dashboardDaysStreak(10), false),
+            _buildHabitCard('Exercise 2', l10n.dashboardDaysStreak(7), false),
             SizedBox(height: 8),
-            _buildHabitCard('Exercise 1', l10n.dashboardDaysStreak(10), false),
+            _buildHabitCard('Exercise 3', l10n.dashboardDaysStreak(5), false),
             SizedBox(height: 120), // Extra space for floating nav
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationIsland(),
     );
   }
 

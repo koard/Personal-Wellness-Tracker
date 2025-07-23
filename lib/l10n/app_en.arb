@@ -1,0 +1,67 @@
+{
+  "@@locale": "en",
+  "appTitle": "Personal Wellness Tracker",
+  
+  "dashboardTitle": "Dashboard",
+  "dashboardGoodMorning": "Good Morning, {name}!",
+  "@dashboardGoodMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardCalories": "Calories",
+  "dashboardWater": "Water",
+  "dashboardGlasses": "glasses",
+  "dashboardTodaysActivity": "Today's Activity",
+  "dashboardOngoing": "Ongoing",
+  "dashboardNext": "Next",
+  "dashboardDailyHabits": "Daily Habits",
+  "dashboardAdd": "Add",
+  "dashboardDone": "Done",
+  "dashboardDaysStreak": "{days} days streak",
+  "@dashboardDaysStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardMinutes": "{count} Min",
+  "@dashboardMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "profileTitle": "Profile",
+  "profileUserProfile": "User Profile",
+  "profileEmail": "Email",
+  "profileDisplayName": "Display Name",
+  "profileJoinedDate": "Joined Date",
+  "profileSettings": "Settings",
+  "profileEditProfile": "Edit Profile",
+  "profileNotifications": "Notifications",
+  "profilePrivacy": "Privacy",
+  "profileAbout": "About",
+  "profileVersion": "Version",
+  "profileSignOut": "Sign Out",
+  "profileNoDisplayName": "No display name set",
+  "profileNotAvailable": "Not available",
+  "profileChangeLanguage": "Change Language",
+  
+  "navigationHome": "Home",
+  "navigationHabits": "Habits",
+  "navigationMeals": "Meals",
+  "navigationProgress": "Progress",
+  "navigationGoals": "Goals",
+  "navigationProfile": "Profile",
+  
+  "commonLanguage": "Language",
+  "commonEnglish": "English",
+  "commonThai": "ไทย",
+  "commonLogout": "Logout"
+}
