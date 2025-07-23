@@ -23,7 +23,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final user = FirebaseAuth.instance.currentUser;
     final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       extendBody: true,
@@ -44,53 +44,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             ),
             Spacer(),
             IconButton(
-              icon: Icon(Icons.notifications_outlined, color: Colors.amber),
+              icon: Icon(Icons.notifications, color: Colors.amber, size: 28),
               onPressed: () {},
             ),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.grey[600], size: 20),
-            ),
+            SizedBox(width: 8),
+            Icon(Icons.person, color: Colors.grey[600], size: 36),
           ],
         ),
-        actions: [
-          PopupMenuButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.language),
-                  title: Text(l10n.commonEnglish),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ref.read(languageProvider.notifier).changeLanguage('en');
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.language),
-                  title: Text(l10n.commonThai),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ref.read(languageProvider.notifier).changeLanguage('th');
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text(l10n.commonLogout),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await FirebaseAuth.instance.signOut();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -127,7 +87,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     title: l10n.dashboardWater,
                     current: currentWater,
                     target: targetWater,
-                    unit: l10n.dashboardGlasses,
+                    unit: "",
                     color: Colors.blue,
                     icon: Icons.water_drop,
                   ),
@@ -188,7 +148,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             ),
             SizedBox(height: 12),
 
-            _buildHabitCard('Exercise 1', l10n.dashboardDaysStreak(10), true), // Mock data for exercise name
+            _buildHabitCard(
+              'Exercise 1',
+              l10n.dashboardDaysStreak(10),
+              true,
+            ), // Mock data for exercise name
             SizedBox(height: 8),
             _buildHabitCard('Exercise 2', l10n.dashboardDaysStreak(7), false),
             SizedBox(height: 8),
@@ -342,7 +306,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   Widget _buildHabitCard(String title, String streak, bool isCompleted) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -366,7 +330,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   title,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
                 ),
@@ -378,23 +342,33 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: isCompleted ? Colors.green[50] : Colors.grey[100],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isCompleted ? Colors.green : Colors.grey[300]!,
-                width: 1,
-              ),
-            ),
-            child: Text(
-              isCompleted ? l10n.dashboardDone : '50%',
-              style: TextStyle(
-                color: isCompleted ? Colors.green[700] : Colors.grey[600],
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+          SizedBox(
+            width: 50,
+            height: 50,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: CircularProgressIndicator(
+                  value: isCompleted ? 1.0 : 0.5,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isCompleted ? Colors.green : Colors.orange,
+                  ),
+                  strokeWidth: 5,
+                  ),
+                ),
+                Text(
+                  isCompleted ? l10n.dashboardDone : '50%',
+                  style: TextStyle(
+                    color: isCompleted ? Colors.green[700] : Colors.grey[600],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
