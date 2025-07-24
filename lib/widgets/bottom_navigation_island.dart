@@ -13,30 +13,33 @@ class BottomNavigationIsland extends ConsumerWidget {
     final currentIndex = ref.watch(currentPageProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(35),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildFloatingNavItem(Icons.home, l10n.navigationHome, 0, currentIndex, ref),
-          _buildFloatingNavItem(Icons.favorite, l10n.navigationHabits, 1, currentIndex, ref),
-          _buildFloatingNavItem(Icons.restaurant, l10n.navigationMeals, 2, currentIndex, ref),
-          _buildFloatingNavItem(Icons.trending_up, l10n.navigationProgress, 3, currentIndex, ref),
-          _buildFloatingNavItem(Icons.flag, l10n.navigationGoals, 4, currentIndex, ref),
-          _buildFloatingNavItem(Icons.person, l10n.navigationProfile, 5, currentIndex, ref),
-        ],
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildFloatingNavItem(Icons.home, l10n.navigationHome, 0, currentIndex, ref),
+            _buildFloatingNavItem(Icons.favorite, l10n.navigationHabits, 1, currentIndex, ref),
+            _buildFloatingNavItem(Icons.restaurant, l10n.navigationMeals, 2, currentIndex, ref),
+            _buildFloatingNavItem(Icons.trending_up, l10n.navigationProgress, 3, currentIndex, ref),
+            _buildFloatingNavItem(Icons.flag, l10n.navigationGoals, 4, currentIndex, ref),
+            _buildFloatingNavItem(Icons.person, l10n.navigationProfile, 5, currentIndex, ref),
+          ],
+        ),
       ),
     );
   }

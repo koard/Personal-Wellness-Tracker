@@ -61,6 +61,7 @@ class _AuthedLayoutState extends ConsumerState<AuthedLayout> {
 
     return Scaffold(
       extendBody: true,
+      extendBodyBehindAppBar: false,
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {

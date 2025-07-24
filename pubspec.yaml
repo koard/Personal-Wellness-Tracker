@@ -13,6 +13,7 @@ dependencies:
   # Firebase
   firebase_core: ^2.25.4
   firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
 
   # Riverpod for state management
   flutter_riverpod: ^2.5.1

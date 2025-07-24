@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
-import '../../widgets/bottom_navigation_island.dart';
 
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
@@ -10,24 +9,41 @@ class HabitsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      extendBody: true,
-      appBar: AppBar(
-        title: Text(
-          l10n.navigationHabits,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+    return Column(
+      children: [
+        // App Bar Content
+        Container(
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SafeArea(
+            bottom: false,
+            child: Row(
+              children: [
+                Text(
+                  l10n.navigationHabits,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      bottomNavigationBar: BottomNavigationIsland(),
+        // Body Content
+        Expanded(
+          child: Container(
+            color: Colors.grey[50],
+            child: Center(
+              child: Text(
+                "Habits Content Coming Soon",
+                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

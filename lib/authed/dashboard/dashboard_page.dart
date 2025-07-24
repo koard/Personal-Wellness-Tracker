@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
-import '../../providers/language_provider.dart';
-import '../../widgets/bottom_navigation_island.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
@@ -24,144 +22,164 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      extendBody: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            // Greeting
-            Text(
-              l10n.dashboardGoodMorning(userName.toUpperCase()),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.notifications, color: Colors.amber, size: 28),
-              onPressed: () {},
-            ),
-            SizedBox(width: 8),
-            Icon(Icons.person, color: Colors.grey[600], size: 36),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Dashboard Title
-            Text(
-              l10n.dashboardTitle,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Tracking Cards Row
-            Row(
+    return Column(
+      children: [
+        // App Bar Content
+        Container(
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SafeArea(
+            bottom: false,
+            child: Row(
               children: [
-                Expanded(
-                  child: _buildTrackingCard(
-                    title: l10n.dashboardCalories,
-                    current: currentCalories,
-                    target: targetCalories,
-                    unit: '',
-                    color: Colors.orange,
-                    icon: Icons.local_fire_department,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: _buildTrackingCard(
-                    title: l10n.dashboardWater,
-                    current: currentWater,
-                    target: targetWater,
-                    unit: "",
-                    color: Colors.blue,
-                    icon: Icons.water_drop,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-
-            // Today's Activity Section
-            Text(
-              l10n.dashboardTodaysActivity,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 12),
-
-            _buildActivityCard(
-              title: l10n.dashboardOngoing,
-              subtitle: 'Go Jogging 1', // Mock data - not translated
-              time: '08:00:00',
-              status: 'ongoing',
-              duration: l10n.dashboardMinutes(150),
-            ),
-            SizedBox(height: 12),
-
-            _buildActivityCard(
-              title: l10n.dashboardNext,
-              subtitle: 'Yoga', // Mock data - not translated
-              time: '18:00-19:00',
-              status: 'next',
-              duration: l10n.dashboardMinutes(120),
-            ),
-            SizedBox(height: 24),
-
-            // Daily Habits Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+                // Greeting
                 Text(
-                  l10n.dashboardDailyHabits,
+                  l10n.dashboardGoodMorning(userName.toUpperCase()),
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    '+ ${l10n.dashboardAdd}',
-                    style: TextStyle(color: Colors.grey[600]),
+                Spacer(),
+                IconButton(
+                  icon: Icon(
+                    Icons.notifications,
+                    color: Colors.amber,
+                    size: 28,
                   ),
+                  onPressed: () {},
                 ),
+                SizedBox(width: 8),
+                Icon(Icons.person, color: Colors.grey[600], size: 36),
               ],
             ),
-            SizedBox(height: 12),
-
-            _buildHabitCard(
-              'Exercise 1',
-              l10n.dashboardDaysStreak(10),
-              true,
-            ), // Mock data for exercise name
-            SizedBox(height: 8),
-            _buildHabitCard('Exercise 2', l10n.dashboardDaysStreak(7), false),
-            SizedBox(height: 8),
-            _buildHabitCard('Exercise 3', l10n.dashboardDaysStreak(5), false),
-            SizedBox(height: 120), // Extra space for floating nav
-          ],
+          ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationIsland(),
+        // Body Content
+        Expanded(
+          child: Container(
+            color: Colors.grey[50],
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dashboard Title
+                  Text(
+                    l10n.dashboardTitle,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Tracking Cards Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTrackingCard(
+                          title: l10n.dashboardCalories,
+                          current: currentCalories,
+                          target: targetCalories,
+                          unit: '',
+                          color: Colors.orange,
+                          icon: Icons.local_fire_department,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTrackingCard(
+                          title: l10n.dashboardWater,
+                          current: currentWater,
+                          target: targetWater,
+                          unit: "",
+                          color: Colors.blue,
+                          icon: Icons.water_drop,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+
+                  // Today's Activity Section
+                  Text(
+                    l10n.dashboardTodaysActivity,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+
+                  _buildActivityCard(
+                    title: l10n.dashboardOngoing,
+                    subtitle: 'Go Jogging 1', // Mock data - not translated
+                    time: '08:00:00',
+                    status: 'ongoing',
+                    duration: l10n.dashboardMinutes(150),
+                  ),
+                  SizedBox(height: 12),
+
+                  _buildActivityCard(
+                    title: l10n.dashboardNext,
+                    subtitle: 'Yoga', // Mock data - not translated
+                    time: '18:00-19:00',
+                    status: 'next',
+                    duration: l10n.dashboardMinutes(120),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Daily Habits Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.dashboardDailyHabits,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          '+ ${l10n.dashboardAdd}',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+
+                  _buildHabitCard(
+                    'Exercise 1',
+                    l10n.dashboardDaysStreak(10),
+                    true,
+                  ), // Mock data for exercise name
+                  SizedBox(height: 8),
+                  _buildHabitCard(
+                    'Exercise 2',
+                    l10n.dashboardDaysStreak(7),
+                    false,
+                  ),
+                  SizedBox(height: 8),
+                  _buildHabitCard(
+                    'Exercise 3',
+                    l10n.dashboardDaysStreak(5),
+                    false,
+                  ),
+                  SizedBox(height: 120), // Extra space for floating nav
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -220,11 +238,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             Text(unit, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
           ],
           SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 6,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 10,
+            ),
           ),
         ],
       ),
@@ -352,12 +373,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   width: 70,
                   height: 70,
                   child: CircularProgressIndicator(
-                  value: isCompleted ? 1.0 : 0.5,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isCompleted ? Colors.green : Colors.orange,
-                  ),
-                  strokeWidth: 5,
+                    value: isCompleted ? 1.0 : 0.5,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isCompleted ? Colors.green : Colors.orange,
+                    ),
+                    strokeWidth: 5,
                   ),
                 ),
                 Text(
