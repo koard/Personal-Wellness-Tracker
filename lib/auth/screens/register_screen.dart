@@ -23,13 +23,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _register() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
-      final success = await ref.read(authServiceProvider).registerWithEmail(
-        email: emailCtrl.text.trim(),
-        password: passwordCtrl.text.trim(),
-      );
-      setState(() => isLoading = false);
 
-      if (mounted) {
+      try {
+        final success = await ref.read(authServiceProvider).registerWithEmail(
+          email: emailCtrl.text.trim(),
+          password: passwordCtrl.text.trim(),
+        );
+
+        setState(() => isLoading = false);
+
+        if (!mounted) return;
+
         if (success) {
           showDialog(
             context: context,
@@ -59,16 +63,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           if (mounted) {
             Navigator.of(context)
               ..pop() // ปิด dialog
-              ..pop(); // ย้อนกลับไป login
+              ..pop(); // กลับไปหน้า login
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registration failed.')),
           );
         }
+      } on Exception catch (e) {
+        setState(() => isLoading = false);
+
+        // แสดง SnackBar แจ้ง error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceAll('Exception: ', ''),
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +114,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Create Account 📝',
+                    'Create Account',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 24),
