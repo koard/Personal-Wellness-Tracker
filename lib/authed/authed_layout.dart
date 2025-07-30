@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/bottom_navigation_island.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/auth_provider.dart';
 import 'dashboard/dashboard_page.dart';
 import 'habits/habits_page.dart';
 import 'meals/meals_page.dart';
@@ -35,47 +36,63 @@ class _AuthedLayoutState extends ConsumerState<AuthedLayout> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to navigation changes and animate to the new page
-    ref.listen<int>(currentPageProvider, (previous, next) {
-      if (_pageController.hasClients && previous != next && !_isAnimating) {
-        _isAnimating = true;
-        _pageController.animateToPage(
-          next,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        ).then((_) {
-          _isAnimating = false;
-        });
-      }
-    });
+    final authState = ref.watch(authStateChangesProvider);
 
-    // Define the page content (without navigation)
-    final pageContents = [
-      const DashboardPage(),    // 0 - Home
-      const HabitsPage(),       // 1 - Habits  
-      const MealsPage(),        // 2 - Meals
-      const ProgressPage(),     // 3 - Progress
-      const GoalsPage(),        // 4 - Goals                    
-      const ProfilePage(),      // 5 - Profile
-    ];
+    return authState.when(
+      data: (user) {
+        // 👉 ถ้ายังไม่ login ให้กลับไปหน้าหลัก (LoginScreen)
+        if (user == null) {
+          Future.microtask(() {
+            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          });
+          return const SizedBox(); // รอ redirect
+        }
 
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: false,
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          // Update the provider when user swipes, but not during programmatic animation
-          if (!_isAnimating) {
-            ref.read(currentPageProvider.notifier).state = index;
+        // ✅ ถ้า login อยู่ สร้างหน้าหลักตามปกติ
+        final pageContents = [
+          const DashboardPage(),
+          const HabitsPage(),
+          const MealsPage(),
+          const ProgressPage(),
+          const GoalsPage(),
+          const ProfilePage(),
+        ];
+
+        // เช็คการเปลี่ยนหน้า
+        ref.listen<int>(currentPageProvider, (previous, next) {
+          if (_pageController.hasClients && previous != next && !_isAnimating) {
+            _isAnimating = true;
+            _pageController.animateToPage(
+              next,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            ).then((_) {
+              _isAnimating = false;
+            });
           }
-        },
-        children: pageContents,
-      ),
-      bottomNavigationBar: const BottomNavigationIsland(),
+        });
+
+        return Scaffold(
+          extendBody: true,
+          extendBodyBehindAppBar: false,
+          body: PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              if (!_isAnimating) {
+                ref.read(currentPageProvider.notifier).state = index;
+              }
+            },
+            children: pageContents,
+          ),
+          bottomNavigationBar: const BottomNavigationIsland(),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => const Center(child: Text('Error loading user')),
     );
   }
 }
+
 
 // These are content-only versions of your pages (without Scaffold and bottomNavigationBar)
 class DashboardContent extends ConsumerStatefulWidget {

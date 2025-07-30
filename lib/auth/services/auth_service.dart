@@ -17,15 +17,27 @@ class AuthService {
     }
   }
 
-  Future<bool> registerWithEmail({required String email, required String password}) async {
+  Future<bool> registerWithEmail({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw Exception('This email is already registered.');
+      } else {
+        throw Exception(e.message ?? 'An unknown error occurred.');
+      }
     } catch (e) {
-      developer.log('Register error: $e', name: 'AuthService');
       return false;
     }
   }
+
 
   Future<void> signOut() async => _auth.signOut();
 
