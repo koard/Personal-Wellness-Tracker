@@ -39,8 +39,6 @@ class _LogExerciseSheetState extends ConsumerState<LogExerciseSheet> {
             children: [
               Text('Log Exercise', style: Theme.of(context).textTheme.titleLarge),
 
-              const SizedBox(height: 20),
-
               DropdownButtonFormField<String>(
                 value: _type,
                 items: _exerciseOptions.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
@@ -49,14 +47,12 @@ class _LogExerciseSheetState extends ConsumerState<LogExerciseSheet> {
               ),
 
               TextFormField(
-                initialValue: _duration.toString(),
                 decoration: const InputDecoration(labelText: 'Duration (minutes)'),
                 keyboardType: TextInputType.number,
                 onChanged: (val) => _duration = int.tryParse(val) ?? _duration,
               ),
 
               TextFormField(
-                initialValue: _calories.toString(),
                 decoration: const InputDecoration(labelText: 'Calories Burned'),
                 keyboardType: TextInputType.number,
                 onChanged: (val) => _calories = int.tryParse(val) ?? _calories,
@@ -65,22 +61,7 @@ class _LogExerciseSheetState extends ConsumerState<LogExerciseSheet> {
               const SizedBox(height: 20),
 
               ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final updated = widget.habit.copyWith(
-                      exercises: [
-                        ...widget.habit.exercises,
-                        ExerciseEntry(
-                          type: _type,
-                          durationMinutes: _duration,
-                          calories: _calories,
-                        )
-                      ],
-                    );
-                    await ref.read(submitHabitProvider(updated));
-                    if (context.mounted) Navigator.pop(context);
-                  }
-                },
+                onPressed: _submit,
                 child: const Text('Save'),
               ),
             ],
@@ -88,5 +69,19 @@ class _LogExerciseSheetState extends ConsumerState<LogExerciseSheet> {
         ),
       ),
     );
+  }
+
+  void _submit() async {
+    final newEntry = ExerciseEntry(
+      type: _type,
+      durationMinutes: _duration,
+      calories: _calories,
+    );
+    final updated = widget.habit.copyWith(
+      exercises: [...widget.habit.exercises, newEntry], // เพิ่มเข้า list เดิม
+    );
+    await ref.read(submitHabitProvider(updated));
+    ref.invalidate(habitTodayProvider); // refresh ข้อมูล
+    if (context.mounted) Navigator.pop(context);
   }
 }

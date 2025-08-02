@@ -16,11 +16,8 @@ class HabitService {
 
   // เพิ่มหรืออัปเดต Habit
   static Future<void> upsertHabit(Habit habit) async {
-    final doc = habit.id.isEmpty
-        ? _habitCollection.doc()
-        : _habitCollection.doc(habit.id);
-    print('💾 Saving Habit: ${habit.toJson()}');
-    await doc.set(habit.copyWith(id: doc.id).toJson());
+    // ต้องใช้ id เดิม ไม่ใช่ ''
+    await _habitCollection.doc(habit.id).set(habit.toJson(), SetOptions(merge: true));
   }
 
   // โหลด habit รายวัน (ใช้วันที่)

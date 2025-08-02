@@ -54,19 +54,16 @@ class Habit {
       id: docId,
       userId: json['userId'] ?? '',
       date: (json['date'] as Timestamp).toDate(),
-      exercises: (json['exercises'] as List<dynamic>?)
-              ?.map((e) => ExerciseEntry.fromJson(e))
-              .toList() ??
-          [],
+      exercises: (json['exercises'] as List<dynamic>? ?? [])
+          .map((e) => ExerciseEntry.fromJson(e as Map<String, dynamic>))
+          .toList(),
       waterLiters: (json['waterLiters'] ?? 0).toDouble(),
-      waterGoalLiters: (json['waterGoalLiters'] ?? 2.0).toDouble(),
-      sleep:
-          json['sleep'] != null ? SleepEntry.fromJson(json['sleep']) : null,
+      waterGoalLiters: (json['waterGoalLiters'] ?? 2).toDouble(),
+      sleep: json['sleep'] != null ? SleepEntry.fromJson(json['sleep']) : null,
       mood: json['mood'] != null ? MoodEntry.fromJson(json['mood']) : null,
-      customHabits: (json['customHabits'] as List<dynamic>?)
-              ?.map((e) => CustomHabit.fromJson(e))
-              .toList() ??
-          [],
+      customHabits: (json['customHabits'] as List<dynamic>? ?? [])
+          .map((e) => CustomHabit.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -105,13 +102,11 @@ class ExerciseEntry {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'durationMinutes': durationMinutes,
-      'calories': calories,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'type': type,
+    'durationMinutes': durationMinutes,
+    'calories': calories,
+  };
 }
 
 class SleepEntry {

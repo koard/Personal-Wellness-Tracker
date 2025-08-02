@@ -32,45 +32,39 @@ class _LogWaterSheetState extends ConsumerState<LogWaterSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("ปรับการดื่มน้ำวันนี้", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Log Water Intake', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
 
             // ปริมาณน้ำ
-            Text("ปริมาณที่ดื่ม (ลิตร): ${liters.toStringAsFixed(2)}"),
-            Slider(
-              value: liters,
-              min: 0,
-              max: 5,
-              divisions: 20,
-              label: "${liters.toStringAsFixed(2)} ลิตร",
-              onChanged: (val) => setState(() => liters = val),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Water (liters)'),
+              initialValue: liters.toString(),
+              keyboardType: TextInputType.number,
+              onChanged: (val) => setState(() => liters = double.tryParse(val) ?? liters),
             ),
 
             const SizedBox(height: 16),
 
             // เป้าหมาย
-            Text("เป้าหมายวันนี้ (ลิตร): ${goal.toStringAsFixed(1)}"),
-            Slider(
-              value: goal,
-              min: 1.0,
-              max: 5.0,
-              divisions: 8,
-              label: "${goal.toStringAsFixed(1)} ลิตร",
-              onChanged: (val) => setState(() => goal = val),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Goal (liters)'),
+              initialValue: goal.toString(),
+              keyboardType: TextInputType.number,
+              onChanged: (val) => setState(() => goal = double.tryParse(val) ?? goal),
             ),
 
             const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
+            ElevatedButton(
+              onPressed: () async {
                 final updated = widget.habit.copyWith(
                   waterLiters: liters,
                   waterGoalLiters: goal,
                 );
-                ref.read(submitHabitProvider(updated));
-                Navigator.pop(context);
+                await ref.read(submitHabitProvider(updated));
+                ref.invalidate(habitTodayProvider); // refresh ข้อมูล
+                if (context.mounted) Navigator.pop(context);
               },
-              icon: const Icon(Icons.check),
-              label: const Text("บันทึก"),
+              child: const Text('Save'),
             )
           ],
         ),
