@@ -64,8 +64,6 @@ class HabitsPage extends ConsumerWidget {
                                   padding: const EdgeInsets.symmetric(vertical: 2),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.fitness_center, size: 18, color: Colors.green),
-                                      const SizedBox(width: 6),
                                       Text("${e.type}  ", style: const TextStyle(fontWeight: FontWeight.w600)),
                                       Text("${e.durationMinutes} min", style: const TextStyle(color: Colors.black54)),
                                       if (e.calories > 0) ...[
@@ -186,7 +184,6 @@ class HabitsPage extends ConsumerWidget {
                 content: habit.sleep != null
                     ? Row(
                         children: [
-                          const Icon(Icons.nightlight_round, color: Colors.deepPurple, size: 20),
                           const SizedBox(width: 6),
                           Text(
                             '${habit.sleep!.bedtime.format(context)} - ${habit.sleep!.wakeup.format(context)}',

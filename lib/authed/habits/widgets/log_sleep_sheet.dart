@@ -19,8 +19,8 @@ class _LogSleepSheetState extends ConsumerState<LogSleepSheet> {
   @override
   void initState() {
     super.initState();
-    bedtime = widget.habit.sleep?.bedtime ?? const TimeOfDay(hour: 22, minute: 30);
-    wakeup = widget.habit.sleep?.wakeup ?? const TimeOfDay(hour: 6, minute: 30);
+    bedtime = widget.habit.sleep?.bedtime ?? const TimeOfDay(hour: 22, minute: 00);
+    wakeup = widget.habit.sleep?.wakeup ?? const TimeOfDay(hour: 6, minute: 00);
     quality = widget.habit.sleep?.quality ?? 0;
   }
 

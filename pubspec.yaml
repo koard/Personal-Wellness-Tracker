@@ -39,6 +39,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.0
 
 flutter:
   generate: true
@@ -46,3 +47,14 @@ flutter:
   
   assets:
     - .env
+
+flutter_native_splash:
+  color: "#00B7FF"
+  image: lib/assets/splash_icon.png 
+  android: true
+  ios: true
+  web: true
+  color_dark: "#00B7FF"
+  android_gravity: center
+  ios_content_mode: center
+  fullscreen: true
