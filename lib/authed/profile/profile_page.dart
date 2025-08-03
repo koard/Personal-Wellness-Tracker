@@ -16,40 +16,26 @@ class ProfilePage extends ConsumerWidget {
     final userAsyncValue = ref.watch(currentUserProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-      children: [
-        // App Bar Content
-        Container(
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: SafeArea(
-            bottom: false,
-            child: Row(
-              children: [
-                Text(
-                  l10n.profileTitle,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 24,
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      extendBody: true,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          l10n.profileTitle,
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
-        // Body Content
-        Expanded(
-          child: Container(
-            color: Colors.grey[50],
-            child: userAsyncValue.when(
-              data: (user) =>
-                  _buildProfileContent(context, ref, authUser, user, l10n),
-              loading: () => Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+        automaticallyImplyLeading: false,
+      ),
+      body: userAsyncValue.when(
+        data: (user) =>
+            _buildProfileContent(context, ref, authUser, user, l10n),
+        loading: () => Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               Icon(Icons.error_outline, size: 64, color: Colors.red),
               SizedBox(height: 16),
               Text(
@@ -64,16 +50,13 @@ class ProfilePage extends ConsumerWidget {
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(currentUserProvider),
+                onPressed: () => ref.refresh(currentUserProvider),
                 child: Text('Retry'),
               ),
-                  ],
-                ),
-              ),
-            ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -104,7 +87,7 @@ class ProfilePage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: Offset(0, 2),
                 ),
@@ -115,20 +98,13 @@ class ProfilePage extends ConsumerWidget {
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.blue[100],
-                  child: photoURL != null
+                  child: user?.profileImage != null
                       ? ClipOval(
                           child: Image.network(
-                            photoURL,
+                            user!.profileImage!,
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.person,
-                                size: 60,
-                                color: Colors.blue[600],
-                              );
-                            },
                           ),
                         )
                       : Icon(Icons.person, size: 60, color: Colors.blue[600]),
@@ -414,7 +390,7 @@ class ProfilePage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -472,7 +448,7 @@ class ProfilePage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),

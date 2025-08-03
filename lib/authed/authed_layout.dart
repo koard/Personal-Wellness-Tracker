@@ -283,7 +283,7 @@ class _DashboardContentState extends ConsumerState<DashboardContent>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -339,9 +339,7 @@ class HabitsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Extract the body content from HabitsPage (without Scaffold and bottomNavigationBar)
-    return Container(
-      child: Center(child: Text("Habits Content")),
-    );
+    return Center(child: Text("Habits Content"));
   }
 }
 
@@ -350,9 +348,7 @@ class MealsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(child: Text("Meals Content")),
-    );
+    return Center(child: Text("Meals Content"));
   }
 }
 
@@ -361,9 +357,7 @@ class ProgressContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(child: Text("Progress Content")),
-    );
+    return Center(child: Text("Progress Content"));
   }
 }
 
@@ -372,9 +366,7 @@ class GoalsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(child: Text("Goals Content")),
-    );
+    return Center(child: Text("Goals Content"));
   }
 }
 
@@ -383,8 +375,6 @@ class ProfileContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(child: Text("Profile Content")),
-    );
+    return Center(child: Text("Profile Content"));
   }
 }

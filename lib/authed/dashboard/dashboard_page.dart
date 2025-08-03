@@ -22,49 +22,43 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
     final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-      children: [
-        // App Bar Content
-        Container(
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: SafeArea(
-            bottom: false,
-            child: Row(
-              children: [
-                // Greeting
-                Text(
-                  l10n.dashboardGoodMorning(userName.toUpperCase()),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      extendBody: true,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            // Greeting
+            Text(
+              l10n.dashboardGoodMorning(userName.toUpperCase()),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            Spacer(),
+            IconButton(
+              icon: Icon(
                     Icons.notifications,
                     color: Colors.amber,
                     size: 28,
                   ),
-                  onPressed: () {},
-                ),
-                SizedBox(width: 8),
-                Icon(Icons.person, color: Colors.grey[600], size: 36),
-              ],
+              onPressed: () {},
             ),
-          ),
+            SizedBox(width: 8),
+            Icon(Icons.person, color: Colors.grey[600], size: 36),
+          ],
         ),
-        // Body Content
-        Expanded(
-          child: Container(
-            color: Colors.grey[50],
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                   // Dashboard Title
                   Text(
                     l10n.dashboardTitle,
@@ -174,12 +168,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     false,
                   ),
                   SizedBox(height: 120), // Extra space for floating nav
-                ],
-              ),
-            ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -201,7 +192,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -266,7 +257,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -335,7 +326,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
