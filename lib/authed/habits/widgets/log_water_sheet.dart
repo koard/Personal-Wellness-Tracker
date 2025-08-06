@@ -60,7 +60,7 @@ class _LogWaterSheetState extends ConsumerState<LogWaterSheet> {
                   waterLiters: liters,
                   waterGoalLiters: goal,
                 );
-                await ref.read(submitHabitProvider(updated));
+                ref.read(submitHabitProvider(updated));
                 ref.invalidate(habitTodayProvider); // refresh ข้อมูล
                 if (context.mounted) Navigator.pop(context);
               },

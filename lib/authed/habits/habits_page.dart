@@ -7,7 +7,6 @@ import 'package:wellness/authed/habits/widgets/log_water_sheet.dart';
 import 'package:wellness/authed/habits/widgets/log_sleep_sheet.dart';
 import 'package:wellness/authed/habits/widgets/log_mood_sheet.dart';
 import 'package:wellness/authed/habits/widgets/log_custom_habit_sheet.dart';
-import 'package:flutter/cupertino.dart';
 
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
@@ -140,7 +139,7 @@ class HabitsPage extends ConsumerWidget {
                         final updated = habit.copyWith(
                           waterLiters: (habit.waterLiters + 0.25).clamp(0, 5.0),
                         );
-                        await ref.read(submitHabitProvider(updated));
+                        ref.read(submitHabitProvider(updated));
                         ref.invalidate(habitTodayProvider); // refresh ข้อมูล
                       },
                       icon: const Icon(Icons.add),
@@ -163,12 +162,12 @@ class HabitsPage extends ConsumerWidget {
                           builder: (_) => LogWaterSheet(habit: habit),
                         );
                       },
-                      child: const Text("Adjust Amount"),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.blue[900],
                         side: BorderSide(color: Colors.blue[200]!),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
+                      child: const Text("Adjust Amount"),
                     ),
                   ],
                 ),

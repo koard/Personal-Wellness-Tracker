@@ -31,8 +31,11 @@ class _LogSleepSheetState extends ConsumerState<LogSleepSheet> {
     );
     if (picked != null) {
       setState(() {
-        if (isBedtime) bedtime = picked;
-        else wakeup = picked;
+        if (isBedtime) {
+          bedtime = picked;
+        } else {
+          wakeup = picked;
+        }
       });
     }
   }
@@ -41,7 +44,7 @@ class _LogSleepSheetState extends ConsumerState<LogSleepSheet> {
     final updated = widget.habit.copyWith(
       sleep: SleepEntry(bedtime: bedtime, wakeup: wakeup, quality: quality),
     );
-    await ref.read(submitHabitProvider(updated));
+    ref.read(submitHabitProvider(updated));
     ref.invalidate(habitTodayProvider);
     if (context.mounted) Navigator.pop(context);
   }

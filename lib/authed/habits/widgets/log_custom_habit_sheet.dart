@@ -77,7 +77,7 @@ class _LogCustomHabitSheetState extends ConsumerState<LogCustomHabitSheet> {
                       ),
                     ],
                   );
-                  await ref.read(submitHabitProvider(updated));
+                  ref.read(submitHabitProvider(updated));
                   ref.invalidate(habitTodayProvider);
                   if (context.mounted) Navigator.pop(context);
                 },

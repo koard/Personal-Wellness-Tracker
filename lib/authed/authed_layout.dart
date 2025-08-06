@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/bottom_navigation_island.dart';
+import '../widgets/shared/app_background.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'dashboard/dashboard_page.dart';
@@ -72,19 +73,22 @@ class _AuthedLayoutState extends ConsumerState<AuthedLayout> {
           }
         });
 
-        return Scaffold(
-          extendBody: true,
-          extendBodyBehindAppBar: false,
-          body: PageView(
-            controller: _pageController,
-            onPageChanged: (index) {
-              if (!_isAnimating) {
-                ref.read(currentPageProvider.notifier).state = index;
-              }
-            },
-            children: pageContents,
+        return AppBackground(
+          child: Scaffold(
+            extendBody: true,
+            extendBodyBehindAppBar: false,
+            backgroundColor: Colors.transparent, // Make scaffold transparent to show gradient
+            body: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                if (!_isAnimating) {
+                  ref.read(currentPageProvider.notifier).state = index;
+                }
+              },
+              children: pageContents,
+            ),
+            bottomNavigationBar: const BottomNavigationIsland(),
           ),
-          bottomNavigationBar: const BottomNavigationIsland(),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

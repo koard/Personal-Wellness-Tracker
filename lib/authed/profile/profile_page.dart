@@ -6,6 +6,7 @@ import '../../providers/language_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../models/user_model.dart';
 import '../../services/firestore_service.dart';
+import '../../widgets/shared/capsule_notification.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -270,8 +271,9 @@ class ProfilePage extends ConsumerWidget {
             subtitle: "Update your personal information",
             onTap: () {
               // TODO: Navigate to edit profile screen
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Edit profile feature coming soon")),
+              CapsuleNotificationHelper.showInfo(
+                context,
+                message: "Edit profile feature coming soon",
               );
             },
           ),
@@ -288,16 +290,16 @@ class ProfilePage extends ConsumerWidget {
                   authUser.uid,
                 );
                 if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Sample data created successfully!"),
-                    ),
+                  CapsuleNotificationHelper.showSuccess(
+                    context,
+                    message: "Sample data created successfully!",
                   );
                   // Refresh the user provider to show new data
                   ref.invalidate(currentUserProvider);
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Failed to create sample data")),
+                  CapsuleNotificationHelper.showError(
+                    context,
+                    message: "Failed to create sample data",
                   );
                 }
               }
@@ -311,8 +313,9 @@ class ProfilePage extends ConsumerWidget {
             subtitle: "Manage notification preferences",
             onTap: () {
               // TODO: Navigate to notifications settings
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Notifications settings coming soon")),
+              CapsuleNotificationHelper.showInfo(
+                context,
+                message: "Notifications settings coming soon",
               );
             },
           ),
@@ -324,8 +327,9 @@ class ProfilePage extends ConsumerWidget {
             subtitle: "Privacy and security settings",
             onTap: () {
               // TODO: Navigate to privacy settings
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Privacy settings coming soon")),
+              CapsuleNotificationHelper.showInfo(
+                context,
+                message: "Privacy settings coming soon",
               );
             },
           ),

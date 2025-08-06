@@ -18,6 +18,9 @@ class EnvConfig {
   static String get firebaseWebAppId => dotenv.env['FIREBASE_WEB_APP_ID'] ?? '';
   static String get firebaseWebMeasurementId => dotenv.env['FIREBASE_WEB_MEASUREMENT_ID'] ?? '';
   
+  // Gemini AI Configuration
+  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+  
   /// Load environment variables
   static Future<void> load() async {
     await dotenv.load(fileName: ".env");

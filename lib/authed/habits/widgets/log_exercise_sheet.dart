@@ -80,7 +80,7 @@ class _LogExerciseSheetState extends ConsumerState<LogExerciseSheet> {
     final updated = widget.habit.copyWith(
       exercises: [...widget.habit.exercises, newEntry], // เพิ่มเข้า list เดิม
     );
-    await ref.read(submitHabitProvider(updated));
+    ref.read(submitHabitProvider(updated));
     ref.invalidate(habitTodayProvider); // refresh ข้อมูล
     if (context.mounted) Navigator.pop(context);
   }

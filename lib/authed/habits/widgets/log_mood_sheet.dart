@@ -62,7 +62,7 @@ class _LogMoodSheetState extends ConsumerState<LogMoodSheet> {
                 final updated = widget.habit.copyWith(
                   mood: MoodEntry(emoji: emoji, note: note.isEmpty ? null : note),
                 );
-                await ref.read(submitHabitProvider(updated));
+                ref.read(submitHabitProvider(updated));
                 ref.invalidate(habitTodayProvider);
                 if (context.mounted) Navigator.pop(context);
               },

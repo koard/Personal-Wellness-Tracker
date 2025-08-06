@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
+import '../../widgets/shared/capsule_notification.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -66,22 +67,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ..pop(); // กลับไปหน้า login
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration failed.')),
+          CapsuleNotificationHelper.showError(
+            context,
+            message: 'Registration failed.',
           );
         }
       } on Exception catch (e) {
         setState(() => isLoading = false);
 
-        // แสดง SnackBar แจ้ง error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.toString().replaceAll('Exception: ', ''),
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.redAccent,
-          ),
+        // แสดง Capsule Notification แจ้ง error
+        CapsuleNotificationHelper.showError(
+          context,
+          message: e.toString().replaceAll('Exception: ', ''),
         );
       }
     }
@@ -91,14 +88,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: Colors.transparent,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               boxShadow: const [
                 BoxShadow(

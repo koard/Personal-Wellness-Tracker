@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
+import '../../widgets/shared/capsule_notification.dart';
 import '../../authed/authed_layout.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -21,10 +22,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
 
-      final success = await ref.read(authServiceProvider).signInWithEmail(
-        email: emailCtrl.text.trim(),
-        password: passwordCtrl.text.trim(),
-      );
+      final success = await ref
+          .read(authServiceProvider)
+          .signInWithEmail(
+            email: emailCtrl.text.trim(),
+            password: passwordCtrl.text.trim(),
+          );
 
       setState(() => isLoading = false);
 
@@ -40,8 +43,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login failed.')),
+          CapsuleNotificationHelper.showError(
+            context,
+            message: 'Login failed.',
           );
         }
       }
@@ -51,21 +55,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: Colors.transparent,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black12,
                   blurRadius: 10,
                   offset: Offset(0, 4),
-                )
+                ),
               ],
             ),
             child: Form(
@@ -88,8 +92,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    validator: (val) =>
-                        val != null && val.contains('@') ? null : 'Enter valid email',
+                    validator: (val) => val != null && val.contains('@')
+                        ? null
+                        : 'Enter valid email',
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -103,14 +108,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                     ),
-                    validator: (val) =>
-                        val != null && val.length >= 6 ? null : 'Minimum 6 characters',
+                    validator: (val) => val != null && val.length >= 6
+                        ? null
+                        : 'Minimum 6 characters',
                   ),
                   const SizedBox(height: 24),
                   SizedBox(

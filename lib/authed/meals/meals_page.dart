@@ -1,7 +1,15 @@
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../config/app_theme.dart';
 import '../../l10n/app_localizations.dart';
-import '../../widgets/bottom_navigation_island.dart';
+import '../../providers/meals_provider.dart';
+import '../../models/meal_model.dart';
+import '../../widgets/shared/image_viewer_modal.dart';
+import 'camera_screen.dart';
+import 'debug/debug_gemini_screen.dart';
+import 'package:intl/intl.dart';
 
 class MealsPage extends ConsumerWidget {
   const MealsPage({super.key});
@@ -9,23 +17,50 @@ class MealsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    
+    final caloriesData = ref.watch(caloriesProvider);
+    final nutrientsData = ref.watch(nutrientsProvider);
+    final todaysMeals = ref.watch(todaysMealsProvider);
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.transparent,
       extendBody: true,
-      appBar: AppBar(
-        title: Text(
-          l10n.navigationMeals,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: AppBar(
+              title: Text(
+                l10n.navigationMeals,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.colors(context).surfaceForeground,
+                ),
+              ),
+              backgroundColor: AppTheme.colors(
+                context,
+              ).surfaceBackground.withValues(alpha: 0.2),
+              foregroundColor: AppTheme.colors(context).surfaceForeground,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              actions: [
+                // Temporary debug button
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const DebugGeminiScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.bug_report),
+                  tooltip: 'Debug Gemini API',
+                ),
+              ],
+            ),
           ),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -37,13 +72,23 @@ class MealsPage extends ConsumerWidget {
               width: double.infinity,
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.colors(
+                  context,
+                ).surfaceBackground.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.colors(
+                    context,
+                  ).surfaceForeground.withValues(alpha: 0.2),
+                  width: 1,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, 2),
+                    color: AppTheme.colors(
+                      context,
+                    ).mutedBackground.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
                   ),
                 ],
               ),
@@ -54,32 +99,57 @@ class MealsPage extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: AppTheme.colors(context).surfaceForeground,
                     ),
                   ),
                   SizedBox(height: 12),
                   Text(
-                    "1,520 / 2,000",
+                    "${caloriesData['current']} / ${caloriesData['target']}",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                      color: AppTheme.colors(context).primaryBackground,
                     ),
                   ),
                   SizedBox(height: 8),
                   LinearProgressIndicator(
-                    value: 0.76,
-                    backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                    value: caloriesData['target']! > 0
+                        ? (caloriesData['current']! / caloriesData['target']!)
+                              .clamp(0.0, 1.0)
+                        : 0.0,
+                    backgroundColor: AppTheme.colors(
+                      context,
+                    ).mutedBackground.withValues(alpha: 0.3),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppTheme.colors(context).primaryBackground,
+                    ),
                     minHeight: 8,
                   ),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildNutrientCard("Carbs", "120g", "180g", Colors.blue),
-                      _buildNutrientCard("Protein", "65g", "80g", Colors.green),
-                      _buildNutrientCard("Fat", "45g", "60g", Colors.red),
+                      _buildNutrientCard(
+                        context,
+                        "Carbs",
+                        "${nutrientsData['carbs']!['current']!.round()}g",
+                        "${nutrientsData['carbs']!['target']!.round()}g",
+                        Colors.blue,
+                      ),
+                      _buildNutrientCard(
+                        context,
+                        "Protein",
+                        "${nutrientsData['protein']!['current']!.round()}g",
+                        "${nutrientsData['protein']!['target']!.round()}g",
+                        Colors.green,
+                      ),
+                      _buildNutrientCard(
+                        context,
+                        "Fat",
+                        "${nutrientsData['fat']!['current']!.round()}g",
+                        "${nutrientsData['fat']!['target']!.round()}g",
+                        Colors.red,
+                      ),
                     ],
                   ),
                 ],
@@ -96,28 +166,90 @@ class MealsPage extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: AppTheme.colors(context).appForeground,
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const CameraScreen(),
+                      ),
+                    );
+                  },
                   child: Text(
                     "+ Add Meal",
-                    style: TextStyle(color: Colors.blue),
+                    style: TextStyle(
+                      color: AppTheme.colors(context).surfaceForeground,
+                    ),
                   ),
                 ),
               ],
             ),
             SizedBox(height: 12),
 
-            // Meal Cards
-            _buildMealCard("Breakfast", "Oatmeal with fruits", "350 cal", "07:30 AM", Icons.breakfast_dining, Colors.orange),
-            SizedBox(height: 12),
-            _buildMealCard("Lunch", "Grilled chicken salad", "420 cal", "12:30 PM", Icons.lunch_dining, Colors.green),
-            SizedBox(height: 12),
-            _buildMealCard("Snack", "Greek yogurt", "150 cal", "03:00 PM", Icons.cookie, Colors.purple),
-            SizedBox(height: 12),
-            _buildMealCard("Dinner", "Salmon with vegetables", "600 cal", "07:00 PM", Icons.dinner_dining, Colors.red),
+            // Dynamic Meal Cards
+            if (todaysMeals.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: AppTheme.colors(
+                    context,
+                  ).surfaceBackground.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppTheme.colors(
+                      context,
+                    ).surfaceForeground.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.colors(
+                        context,
+                      ).mutedBackground.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.restaurant_outlined,
+                      size: 48,
+                      color: AppTheme.colors(context).mutedBackground,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No meals logged today',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.colors(context).surfaceForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tap "Add Meal" to start tracking',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.colors(
+                          context,
+                        ).surfaceForeground.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...todaysMeals.map(
+                (meal) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildMealCard(context, meal),
+                ),
+              ),
             SizedBox(height: 24),
 
             // Meal Suggestions
@@ -126,26 +258,49 @@ class MealsPage extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: AppTheme.colors(context).appForeground,
               ),
             ),
             SizedBox(height: 12),
 
-            _buildSuggestionCard("Quinoa Bowl", "High protein, balanced nutrients", "480 cal", Colors.teal),
+            _buildSuggestionCard(
+              context,
+              "Quinoa Bowl",
+              "High protein, balanced nutrients",
+              "480 cal",
+              Colors.teal,
+            ),
             SizedBox(height: 8),
-            _buildSuggestionCard("Smoothie Bowl", "Fresh fruits and nuts", "320 cal", Colors.pink),
+            _buildSuggestionCard(
+              context,
+              "Smoothie Bowl",
+              "Fresh fruits and nuts",
+              "320 cal",
+              Colors.pink,
+            ),
             SizedBox(height: 8),
-            _buildSuggestionCard("Avocado Toast", "Healthy fats and fiber", "280 cal", Colors.lime),
+            _buildSuggestionCard(
+              context,
+              "Avocado Toast",
+              "Healthy fats and fiber",
+              "280 cal",
+              Colors.lime,
+            ),
 
             SizedBox(height: 120), // Space for bottom navigation
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationIsland(),
     );
   }
 
-  Widget _buildNutrientCard(String name, String current, String target, Color color) {
+  Widget _buildNutrientCard(
+    BuildContext context,
+    String name,
+    String current,
+    String target,
+    Color color,
+  ) {
     return Column(
       children: [
         Text(
@@ -153,7 +308,9 @@ class MealsPage extends ConsumerWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[600],
+            color: AppTheme.colors(
+              context,
+            ).surfaceForeground.withValues(alpha: 0.7),
           ),
         ),
         SizedBox(height: 4),
@@ -169,36 +326,104 @@ class MealsPage extends ConsumerWidget {
           "/ $target",
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[500],
+            color: AppTheme.colors(
+              context,
+            ).surfaceForeground.withValues(alpha: 0.7),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMealCard(String mealType, String food, String calories, String time, IconData icon, Color color) {
+  Widget _buildMealCard(BuildContext context, Meal meal) {
+    final timeFormat = DateFormat('HH:mm');
+    final time = timeFormat.format(meal.timestamp);
+
+    // Get meal type icon and color
+    IconData icon;
+    Color color;
+
+    switch (meal.mealType) {
+      case 'Breakfast':
+        icon = Icons.breakfast_dining;
+        color = Colors.orange;
+        break;
+      case 'Lunch':
+        icon = Icons.lunch_dining;
+        color = Colors.green;
+        break;
+      case 'Dinner':
+        icon = Icons.dinner_dining;
+        color = Colors.red;
+        break;
+      case 'Snack':
+        icon = Icons.cookie;
+        color = Colors.purple;
+        break;
+      default:
+        icon = Icons.restaurant;
+        color = Colors.blue;
+    }
+
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.colors(
+          context,
+        ).surfaceBackground.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.colors(
+            context,
+          ).surfaceForeground.withValues(alpha: 0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+            color: AppTheme.colors(
+              context,
+            ).mutedBackground.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: Offset(0, 8),
           ),
         ],
       ),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+          // Thumbnail image that's clickable
+          GestureDetector(
+            onTap: () {
+              ImageViewerModal.show(
+                context,
+                meal.imagePath,
+                '${meal.mealType} - ${meal.foodName}',
+              );
+            },
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppTheme.colors(
+                    context,
+                  ).surfaceForeground.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(13),
+                child: _buildThumbnail(meal.imagePath, icon, color),
+              ),
             ),
-            child: Icon(icon, color: color, size: 24),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -206,19 +431,19 @@ class MealsPage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  mealType,
+                  meal.mealType,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: AppTheme.colors(context).surfaceForeground,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  food,
+                  meal.foodName,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: AppTheme.colors(context).surfaceForeground.withValues(alpha: 0.7),
                   ),
                 ),
                 SizedBox(height: 4),
@@ -226,21 +451,34 @@ class MealsPage extends ConsumerWidget {
                   time,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[500],
+                    color: AppTheme.colors(context).surfaceForeground.withValues(alpha: 0.7),
                   ),
                 ),
               ],
             ),
           ),
+          // Calories badge
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color, width: 1),
+              border: Border.all(
+                color: AppTheme.colors(
+                  context,
+                ).surfaceForeground.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.1),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Text(
-              calories,
+              '${meal.calories} cal',
               style: TextStyle(
                 color: color,
                 fontSize: 12,
@@ -253,17 +491,55 @@ class MealsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSuggestionCard(String name, String description, String calories, Color color) {
+  Widget _buildThumbnail(String imagePath, IconData fallbackIcon, Color color) {
+    final file = File(imagePath);
+
+    if (!file.existsSync()) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        child: Icon(fallbackIcon, color: color, size: 24),
+      );
+    }
+
+    return Image.file(
+      file,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          padding: const EdgeInsets.all(12),
+          child: Icon(fallbackIcon, color: color, size: 24),
+        );
+      },
+    );
+  }
+
+  Widget _buildSuggestionCard(
+    BuildContext context,
+    String name,
+    String description,
+    String calories,
+    Color color,
+  ) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.colors(
+          context,
+        ).surfaceBackground.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.colors(
+            context,
+          ).surfaceForeground.withValues(alpha: 0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+            color: AppTheme.colors(
+              context,
+            ).mutedBackground.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -273,8 +549,15 @@ class MealsPage extends ConsumerWidget {
             width: 4,
             height: 40,
             decoration: BoxDecoration(
-              color: color,
+              color: color.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(2),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: Offset(2, 0),
+                ),
+              ],
             ),
           ),
           SizedBox(width: 16),
@@ -287,7 +570,7 @@ class MealsPage extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: AppTheme.colors(context).surfaceForeground,
                   ),
                 ),
                 SizedBox(height: 4),
@@ -295,7 +578,9 @@ class MealsPage extends ConsumerWidget {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: AppTheme.colors(
+                      context,
+                    ).surfaceForeground.withValues(alpha: 0.7),
                   ),
                 ),
               ],
