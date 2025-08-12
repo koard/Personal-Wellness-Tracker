@@ -14,7 +14,6 @@ import 'authed/authed_layout.dart';
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
 import 'widgets/shared/app_background.dart';
-import 'widgets/shared/custom_splash_screen.dart';
 
 // Global cameras variable
 late List<CameraDescription> cameras;
@@ -106,29 +105,11 @@ class MyApp extends ConsumerWidget {
       },
       home: AppBackground(
         child: authState.when(
-          data: (user) {
-            if (user != null) {
-              return const AuthedLayout();
-            } else {
-              return const LoginScreen();
-            }
-          },
-          loading: () => const CustomSplashScreen(),
+          data: (user) => user != null ? const AuthedLayout() : const LoginScreen(),
+          loading: () => const SizedBox.shrink(),   // ว่าง
           error: (error, stackTrace) {
             debugPrint('Auth error: $error');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
-                  Text('Error loading app', style: TextStyle(fontSize: 18)),
-                  SizedBox(height: 8),
-                  Text('Please restart the application', 
-                       style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            );
+            return const Center(child: Text('Error loading app'));
           },
         ),
       ),
