@@ -12,43 +12,35 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   final _controller = PageController();
   int _index = 0;
 
-  final _pages = const [
-    _OnboardData(
-      image: 'lib/assets/onboarding/slide1.png',
-      title: 'Track Your Wellness',
-      subtitle: 'Monitor habits, sleep, mood and more.',
-    ),
-    _OnboardData(
-      image: 'lib/assets/onboarding/slide2.png',
-      title: 'Stay Hydrated',
-      subtitle: 'Smart reminders help you drink enough water.',
-    ),
-    _OnboardData(
-      image: 'lib/assets/onboarding/slide3.png',
-      title: 'Achieve Your Goals',
-      subtitle: 'Set targets and see your progress grow.',
-    ),
+  final List<_OnboardData> _pages = const [
+    _OnboardData(image: 'lib/assets/onboarding/slide1.png'),
+    _OnboardData(image: 'lib/assets/onboarding/slide2.png'),
+    _OnboardData(image: 'lib/assets/onboarding/slide3.png'),
   ];
-
-  Future<void> _finish() async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.setBool('onboarding_done', true);
-    if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/profileSetup');
-  }
 
   void _next() {
     if (_index < _pages.length - 1) {
-      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
     } else {
       _finish();
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Future<void> _finish() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setBool('onboarding_done', true);
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/authed', (r) => false);
+  }
+
+  Future<void> _skip() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setBool('onboarding_done', true);
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/authed', (r) => false);
   }
 
   Widget _buildDots() {
@@ -58,12 +50,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         final active = i == _index;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: active ? 18 : 8,
+          margin: const EdgeInsets.symmetric(horizontal: 5),
             height: 8,
+            width: active ? 22 : 8,
             decoration: BoxDecoration(
-              color: active ? Colors.blue : Colors.blue.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(20),
+              color: active ? const Color(0xFF2563EB) : const Color(0xFF2563EB).withOpacity(.30),
+              borderRadius: BorderRadius.circular(30),
             ),
         );
       }),
@@ -71,9 +63,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final last = _index == _pages.length - 1;
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -85,54 +84,48 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 itemBuilder: (_, i) {
                   final p = _pages[i];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        Expanded(
-                          child: Hero(
-                            tag: 'onboard_image_$i',
-                            child: Image.asset(p.image, fit: BoxFit.contain),
-                          ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Center(
+                      child: Hero(
+                        tag: 'onboard_$i',
+                        child: Image.asset(
+                          p.image,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.image_not_supported, size: 120, color: Colors.grey),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          p.title,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          p.subtitle,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
             _buildDots(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
                   TextButton(
-                    onPressed: _finish,
-                    child: const Text('Skip'),
+                    onPressed: _skip,
+                    child: const Text('Skip', style: TextStyle(color: Color(0xFF475569))),
                   ),
                   const Spacer(),
                   ElevatedButton(
                     onPressed: _next,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                    ),
                     child: Text(last ? 'Get Started' : 'Next'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 26),
           ],
         ),
       ),
@@ -142,7 +135,5 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
 class _OnboardData {
   final String image;
-  final String title;
-  final String subtitle;
-  const _OnboardData({required this.image, required this.title, required this.subtitle});
+  const _OnboardData({required this.image});
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -35,36 +36,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         if (!mounted) return;
 
         if (success) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                color: Colors.green[50],
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.check_circle, color: Colors.green, size: 60),
-                    SizedBox(height: 16),
-                    Text(
-                      'Registration Successful!',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-
-          await Future.delayed(const Duration(seconds: 1));
-          if (mounted) {
-            Navigator.of(context)
-              ..pop() // ปิด dialog
-              ..pop(); // กลับไปหน้า login
-          }
+          final sp = await SharedPreferences.getInstance();
+          await sp.setBool('onboarding_done', false);
+          if (!mounted) return;
+          Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (r) => false);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registration failed.')),
