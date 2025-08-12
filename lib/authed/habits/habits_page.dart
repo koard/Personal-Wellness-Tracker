@@ -7,18 +7,24 @@ import 'package:wellness/authed/habits/widgets/log_water_sheet.dart';
 import 'package:wellness/authed/habits/widgets/log_sleep_sheet.dart';
 import 'package:wellness/authed/habits/widgets/log_mood_sheet.dart';
 import 'package:wellness/authed/habits/widgets/log_custom_habit_sheet.dart';
+import 'package:wellness/models/habit_model.dart';
 
+/// HabitsPage
+/// Daily overview of tracked habits for a selected date (default: today).
+/// Data source: habitForDateProvider(date).
+/// Logging actions open bottom sheets then invalidate the provider to refresh.
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final habitAsync = ref.watch(habitTodayProvider);
-    final formatter = DateFormat('d MMM yyyy');
+    final date = ref.watch(selectedDateProvider);
+    final habitAsync = ref.watch(habitForDateProvider(date));
+    final dateText = DateFormat('d MMM yyyy').format(date);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Today's Habits"),
+        title: const Text('Habits'),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -28,292 +34,299 @@ class HabitsPage extends ConsumerWidget {
       body: habitAsync.when(
         data: (habit) => SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // วันที่
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today, color: Colors.indigo, size: 22),
-                  const SizedBox(width: 8),
-                  Text(
-                    formatter.format(habit.date),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.indigo,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-
-              // Card: Exercise
-              _buildCard(
-                icon: Icons.directions_run,
-                iconColor: Colors.green,
-                gradient: const LinearGradient(colors: [Color(0xFFB2FEFA), Color(0xFF0ED2F7)]),
-                title: 'Exercise',
-                content: habit.exercises.isEmpty
-                    ? const Text("No exercise logged", style: TextStyle(color: Colors.black54))
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: habit.exercises
-                            .map((e) => Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 2),
-                                  child: Row(
-                                    children: [
-                                      Text("${e.type}  ", style: const TextStyle(fontWeight: FontWeight.w600)),
-                                      Text("${e.durationMinutes} min", style: const TextStyle(color: Colors.black54)),
-                                      if (e.calories > 0) ...[
-                                        const SizedBox(width: 8),
-                                        const Icon(Icons.local_fire_department, size: 16, color: Colors.orange),
-                                        Text(" ${e.calories} cal", style: const TextStyle(color: Colors.orange)),
-                                      ]
-                                    ],
-                                  ),
-                                ))
-                            .toList(),
-                      ),
-                action: ElevatedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet(
+            child: Column(
+              children: [
+                _DateSwitcher(
+                  formatted: dateText,
+                  date: date,
+                  onPrev: () => ref.read(selectedDateProvider.notifier).state =
+                      date.subtract(const Duration(days: 1)),
+                  onNext: date.isBefore(_todayOnly())
+                      ? () => ref.read(selectedDateProvider.notifier).state =
+                          date.add(const Duration(days: 1))
+                      : null,
+                  onPick: () async {
+                    final picked = await showDatePicker(
                       context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (_) => LogExerciseSheet(habit: habit),
+                      initialDate: date,
+                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now(),
                     );
+                    if (picked != null) {
+                      ref.read(selectedDateProvider.notifier).state =
+                          DateTime(picked.year, picked.month, picked.day);
+                    }
                   },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Log Exercise"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[400],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                const SizedBox(height: 16),
+                if (habit == null)
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('No data for this day', style: TextStyle(color: Colors.black54)),
+                  )
+                else
+                  Column(
+                    children: [
+                      _exerciseCard(habit, date, ref, context),
+                      _waterCard(habit, date, ref),
+                      _sleepCard(habit, date, ref, context),
+                      _moodCard(habit, date, ref, context),
+                      _customHabitsCard(habit, date, ref),
+                      const SizedBox(height: 100),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Card: Water Intake
-              _buildCard(
-                icon: Icons.water_drop,
-                iconColor: Colors.blue,
-                gradient: const LinearGradient(colors: [Color(0xFF74EBD5), Color(0xFFACB6E5)]),
-                title: 'Water Intake',
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const SizedBox(width: 8),
-                        Text(
-                          "${habit.waterLiters.toStringAsFixed(2)} / ${habit.waterGoalLiters.toStringAsFixed(1)} L",
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: LinearProgressIndicator(
-                        value: (habit.waterLiters / habit.waterGoalLiters).clamp(0.0, 1.0),
-                        backgroundColor: Colors.grey[300],
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-                        minHeight: 10,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      "Note: 1 glass = 250 ml",
-                      style: TextStyle(fontSize: 13, color: Colors.black54),
-                    ),
-                  ],
-                ),
-                action: Row(
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final updated = habit.copyWith(
-                          waterLiters: (habit.waterLiters + 0.25).clamp(0, 5.0),
-                        );
-                        ref.read(submitHabitProvider(updated));
-                        ref.invalidate(habitTodayProvider); // refresh ข้อมูล
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text("1 Glass"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[400], // เปลี่ยนเป็นสีหลัก
-                        foregroundColor: Colors.white,     // ตัวหนังสือขาว
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                          ),
-                          builder: (_) => LogWaterSheet(habit: habit),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.blue[900],
-                        side: BorderSide(color: Colors.blue[200]!),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: const Text("Adjust Amount"),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Card: Sleep
-              _buildCard(
-                icon: Icons.bedtime,
-                iconColor: Colors.deepPurple,
-                gradient: const LinearGradient(colors: [Color(0xFFD3CCE3), Color(0xFFE9E4F0)]),
-                title: 'Sleep',
-                content: habit.sleep != null
-                    ? Row(
-                        children: [
-                          const SizedBox(width: 6),
-                          Text(
-                            '${habit.sleep!.bedtime.format(context)} - ${habit.sleep!.wakeup.format(context)}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(width: 10),
-                          ...List.generate(
-                            habit.sleep!.quality,
-                            (i) => const Icon(Icons.star, color: Colors.amber, size: 20),
-                          ),
-                          ...List.generate(
-                            5 - habit.sleep!.quality,
-                            (i) => const Icon(Icons.star_border, color: Colors.amber, size: 20),
-                          ),
-                        ],
-                      )
-                    : const Text("No sleep data", style: TextStyle(color: Colors.black54)),
-                action: ElevatedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (_) => LogSleepSheet(habit: habit),
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Log Sleep"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple[400],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Card: Mood
-              _buildCard(
-                icon: Icons.emoji_emotions,
-                iconColor: Colors.orange,
-                gradient: const LinearGradient(colors: [Color(0xFFFFE29F), Color(0xFFFFA99F)]),
-                title: 'Mood',
-                content: habit.mood != null
-                    ? Row(
-                        children: [
-                          Text(habit.mood!.emoji, style: const TextStyle(fontSize: 28)),
-                          const SizedBox(width: 8),
-                          Text(habit.mood!.note ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                        ],
-                      )
-                    : const Text("No mood tracked", style: TextStyle(color: Colors.black54)),
-                action: ElevatedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (_) => LogMoodSheet(habit: habit),
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Log Mood"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange[400],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Card: Custom Habits
-              _buildCard(
-                icon: Icons.checklist,
-                iconColor: Colors.teal,
-                gradient: const LinearGradient(colors: [Color(0xFFB7F8DB), Color(0xFF50A7C2)]),
-                title: 'Other Habits',
-                content: habit.customHabits.isEmpty
-                    ? const Text("No custom habits", style: TextStyle(color: Colors.black54))
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: habit.customHabits
-                            .map((h) => Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 2),
-                                  child: Row(
-                                    children: [
-                                      Text(h.icon, style: const TextStyle(fontSize: 22)),
-                                      const SizedBox(width: 6),
-                                      Text(h.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                      const SizedBox(width: 8),
-                                      Text("(${h.durationMinutes} min)", style: const TextStyle(color: Colors.black54)),
-                                    ],
-                                  ),
-                                ))
-                            .toList(),
-                      ),
-                action: ElevatedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (_) => LogCustomHabitSheet(habit: habit),
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add Habit"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[400],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 100), // Space for nav bar
-            ],
-          ),
+              ],
+            ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
   }
+
+  // -------------------- Section Cards --------------------
+
+  Widget _exerciseCard(Habit habit, DateTime date, WidgetRef ref, BuildContext context) {
+    return _buildCard(
+      title: 'Exercise',
+      icon: Icons.directions_run,
+      iconColor: Colors.green,
+      gradient: const LinearGradient(colors: [Color(0xFFB2FEFA), Color(0xFF0ED2F7)]),
+      content: habit.exercises.isEmpty
+          ? const Text('No exercise logged', style: TextStyle(color: Colors.black54))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: habit.exercises.map((e) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('•', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.1)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            Text(e.type, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Text('${e.durationMinutes} min', style: const TextStyle(color: Colors.black54)),
+                            if (e.calories > 0)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.local_fire_department, size: 16, color: Colors.orange),
+                                  Text(' ${e.calories} cal', style: const TextStyle(color: Colors.orange)),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+      action: ElevatedButton.icon(
+        icon: const Icon(Icons.add),
+        label: const Text('Log Exercise'),
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (_) => LogExerciseSheet(habit: habit),
+        ),
+        style: _btnStyle(Colors.green[400]),
+      ),
+    );
+  }
+
+  Widget _waterCard(Habit habit, DateTime date, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: _buildCard(
+        title: 'Water Intake',
+        icon: Icons.water_drop,
+        iconColor: Colors.blue,
+        gradient: const LinearGradient(colors: [Color(0xFF74EBD5), Color(0xFFACB6E5)]),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const SizedBox(width: 8),
+                Text(
+                  '${habit.waterLiters.toStringAsFixed(2)} / ${habit.waterGoalLiters.toStringAsFixed(1)} L',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: LinearProgressIndicator(
+                value: (habit.waterLiters / habit.waterGoalLiters).clamp(0.0, 1.0),
+                backgroundColor: Colors.grey[300],
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                minHeight: 10,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text('Note: 1 glass = 250 ml', style: TextStyle(fontSize: 13, color: Colors.black54)),
+          ],
+        ),
+        action: Row(
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('1 Glass'),
+              style: _btnStyle(Colors.blue[400]),
+              onPressed: () {
+                final updated = habit.copyWith(
+                  waterLiters: (habit.waterLiters + 0.25).clamp(0, 5.0),
+                );
+                ref.read(submitHabitProvider(updated));
+                ref.invalidate(habitForDateProvider(date));
+              },
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton(
+              onPressed: () => _openSheet(
+                builder: (c) => LogWaterSheet(habit: habit),
+                context: ref.context,
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.blue[900],
+                side: BorderSide(color: Colors.blue[200]!),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Adjust Amount'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sleepCard(Habit habit, DateTime date, WidgetRef ref, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: _buildCard(
+        title: 'Sleep',
+        icon: Icons.bedtime,
+        iconColor: Colors.deepPurple,
+        gradient: const LinearGradient(colors: [Color(0xFFD3CCE3), Color(0xFFE9E4F0)]),
+        content: habit.sleep == null
+            ? const Text('No sleep data', style: TextStyle(color: Colors.black54))
+            : Row(
+                children: [
+                  const SizedBox(width: 6),
+                  Text(
+                    '${habit.sleep!.bedtime.format(context)} - ${habit.sleep!.wakeup.format(context)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 10),
+                  ...List.generate(
+                    habit.sleep!.quality,
+                    (i) => const Icon(Icons.star, color: Colors.amber, size: 20),
+                  ),
+                  ...List.generate(
+                    5 - habit.sleep!.quality,
+                    (i) => const Icon(Icons.star_border, color: Colors.amber, size: 20),
+                  ),
+                ],
+              ),
+        action: ElevatedButton.icon(
+          icon: const Icon(Icons.add),
+          label: const Text('Log Sleep'),
+          style: _btnStyle(Colors.deepPurple[400]),
+          onPressed: () => _openSheet(
+            builder: (_) => LogSleepSheet(habit: habit),
+            context: context,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _moodCard(Habit habit, DateTime date, WidgetRef ref, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: _buildCard(
+        title: 'Mood',
+        icon: Icons.emoji_emotions,
+        iconColor: Colors.orange,
+        gradient: const LinearGradient(colors: [Color(0xFFFFE29F), Color(0xFFFFA99F)]),
+        content: habit.mood == null
+            ? const Text('No mood tracked', style: TextStyle(color: Colors.black54))
+            : Row(
+                children: [
+                  Text(habit.mood!.emoji, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: 8),
+                  Text(
+                    habit.mood!.note ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+        action: ElevatedButton.icon(
+          icon: const Icon(Icons.add),
+          label: const Text('Log Mood'),
+          style: _btnStyle(Colors.orange[400]),
+          onPressed: () => _openSheet(
+            builder: (_) => LogMoodSheet(habit: habit),
+            context: context,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _customHabitsCard(Habit habit, DateTime date, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: _buildCard(
+        title: 'Other Habits',
+        icon: Icons.checklist,
+        iconColor: Colors.teal,
+        gradient: const LinearGradient(colors: [Color(0xFFB7F8DB), Color(0xFF50A7C2)]),
+        content: habit.customHabits.isEmpty
+            ? const Text('No custom habits', style: TextStyle(color: Colors.black54))
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: habit.customHabits.map((h) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Text(h.icon, style: const TextStyle(fontSize: 22)),
+                        const SizedBox(width: 6),
+                        Text(h.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(width: 8),
+                        Text('(${h.durationMinutes} min)',
+                            style: const TextStyle(color: Colors.black54)),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+        action: ElevatedButton.icon(
+          icon: const Icon(Icons.add),
+          label: const Text('Add Habit'),
+          style: _btnStyle(Colors.teal[400]),
+          onPressed: () => _openSheet(
+            builder: (_) => LogCustomHabitSheet(habit: habit),
+            context: ref.context,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -------------------- Shared UI Helpers --------------------
 
   Widget _buildCard({
     required IconData icon,
@@ -324,7 +337,6 @@ class HabitsPage extends ConsumerWidget {
     Gradient? gradient,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         gradient: gradient,
         color: gradient == null ? Colors.white : null,
@@ -376,6 +388,94 @@ class HabitsPage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  ButtonStyle _btnStyle(Color? c) => ElevatedButton.styleFrom(
+        backgroundColor: c,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      );
+
+  void _openSheet({
+    required WidgetBuilder builder,
+    required BuildContext context,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: builder,
+    );
+  }
+
+  static DateTime _todayOnly() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+}
+
+/// Date selector row (prev / date picker / next).
+class _DateSwitcher extends StatelessWidget {
+  final DateTime date;
+  final VoidCallback onPrev;
+  final VoidCallback? onNext;
+  final VoidCallback onPick;
+  final String formatted;
+  const _DateSwitcher({
+    required this.date,
+    required this.onPrev,
+    required this.onNext,
+    required this.onPick,
+    required this.formatted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          tooltip: 'Previous day',
+          icon: const Icon(Icons.chevron_left),
+          onPressed: onPrev,
+        ),
+        Expanded(
+          child: InkWell(
+            onTap: onPick,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                formatted,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.indigo,
+                ),
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: 'Next day',
+          icon: const Icon(Icons.chevron_right),
+          onPressed: onNext,
+        ),
+      ],
     );
   }
 }

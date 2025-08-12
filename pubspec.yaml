@@ -59,9 +59,9 @@ flutter:
   assets:
     - .env
     - lib/assets/
+    - lib/assets/onboarding/
 
 flutter_native_splash:
-  color: "#00B7FF"                # สีพื้นหลัง (ใช้ร่วมกับ background image)
   background_image: lib/assets/background-dark.png   # รูปพื้นหลัง (เต็มจอ)
   image: lib/assets/splash_icon.png            # โลโก้ตรงกลาง
   android: true

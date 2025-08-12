@@ -45,7 +45,7 @@ class _LogSleepSheetState extends ConsumerState<LogSleepSheet> {
       sleep: SleepEntry(bedtime: bedtime, wakeup: wakeup, quality: quality),
     );
     ref.read(submitHabitProvider(updated));
-    ref.invalidate(habitTodayProvider);
+    ref.invalidate(habitForDateProvider(widget.habit.date));
     if (context.mounted) Navigator.pop(context);
   }
 

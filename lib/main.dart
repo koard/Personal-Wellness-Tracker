@@ -14,7 +14,8 @@ import 'authed/authed_layout.dart';
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
 import 'widgets/shared/app_background.dart';
-import 'widgets/shared/custom_splash_screen.dart';
+import 'authed/onboarding/onboarding_flow.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Global cameras variable
 late List<CameraDescription> cameras;
@@ -31,6 +32,12 @@ class NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
   ) {
     return child;
   }
+}
+
+// เพิ่มฟังก์ชันตรวจ onboarding
+Future<bool> _isOnboardingDone() async {
+  final sp = await SharedPreferences.getInstance();
+  return sp.getBool('onboarding_done') ?? false;
 }
 
 void main() async {
@@ -100,37 +107,29 @@ class MyApp extends ConsumerWidget {
       ),
       themeMode: ThemeMode.dark, // Default to dark theme
       routes: {
-        '/register': (context) => const RegisterScreen(),
-        '/authed': (context) => const AuthedLayout(),
-        // '/onboarding': (context) => const OnboardingScreen(), // ภายหลัง
+        '/register': (c) => const RegisterScreen(),
+        '/authed': (c) => const AuthedLayout(),
+        '/onboarding': (c) => const OnboardingFlow(),
       },
-      home: AppBackground(
-        child: authState.when(
-          data: (user) {
-            if (user != null) {
-              return const AuthedLayout();
-            } else {
-              return const LoginScreen();
-            }
-          },
-          loading: () => const CustomSplashScreen(),
-          error: (error, stackTrace) {
-            debugPrint('Auth error: $error');
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
-                  Text('Error loading app', style: TextStyle(fontSize: 18)),
-                  SizedBox(height: 8),
-                  Text('Please restart the application', 
-                       style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            );
-          },
-        ),
+      home: FutureBuilder<bool>(
+        future: _isOnboardingDone(),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const SizedBox.shrink();
+          }
+          final done = snap.data ?? false;
+          return AppBackground(
+            child: authState.when(
+              data: (user) {
+                if (user == null) return const LoginScreen();
+                if (!done) return const OnboardingFlow();
+                return const AuthedLayout();
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const Center(child: Text('Error loading app')),
+            ),
+          );
+        },
       ),
     );
   }

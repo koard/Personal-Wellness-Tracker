@@ -5,30 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 final habitServiceProvider = Provider((ref) => HabitService());
 
-// ดึง habit วันนี้ (หรือสร้างใหม่ถ้ายังไม่มี)
-final habitTodayProvider = FutureProvider<Habit>((ref) async {
-  final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-  final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-  Habit? habit = await HabitService.getHabitByDate(today);
-
-  if (habit != null) {
-    return habit;
-  } else {
-    // สร้าง id ใหม่ (เช่นใช้ Firestore doc id หรือ timestamp)
-    final newHabit = Habit(
-      id: '${userId}_${today.toIso8601String()}',
-      userId: userId,
-      date: today,
-      exercises: [],
-      waterLiters: 0,
-      waterGoalLiters: 2,
-      sleep: null,
-      mood: null,
-      customHabits: [],
-    );
-    await HabitService.upsertHabit(newHabit);
-    return newHabit;
-  }
+// วันที่ที่ผู้ใช้กำลังดู (เริ่มต้น = วันนี้)
+final selectedDateProvider = StateProvider<DateTime>((ref) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
 });
 
 // ดึง habit ทั้งหมด (เรียงจากวันล่าสุด)
@@ -44,4 +24,33 @@ final habitByDateProvider = FutureProvider.family<Habit?, DateTime>((ref, date) 
 // สร้างหรืออัปเดต habit
 final submitHabitProvider = FutureProvider.family<void, Habit>((ref, habit) async {
   return HabitService.upsertHabit(habit);
+});
+
+// ดึง habit ตามวันที่ (สร้างใหม่ถ้าเป็นวันนี้ และยังไม่มีข้อมูล)
+final habitForDateProvider = FutureProvider.family<Habit?, DateTime>((ref, date) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return null;
+
+  final day = DateTime(date.year, date.month, date.day);
+  Habit? habit = await HabitService.getHabitByDate(day);
+  if (habit != null) return habit;
+
+  // สร้างใหม่สำหรับทุกวันที่ (ย้อนหลัง/วันนี้) แต่ไม่สร้างล่วงหน้าในอนาคต
+  final today = DateTime.now();
+  final todayOnly = DateTime(today.year, today.month, today.day);
+  if (day.isAfter(todayOnly)) return null; // ไม่สร้างอนาคต
+
+  final newHabit = Habit(
+    id: '${user.uid}_${day.toIso8601String()}',
+    userId: user.uid,
+    date: day,
+    exercises: [],
+    waterLiters: 0,
+    waterGoalLiters: 2,
+    sleep: null,
+    mood: null,
+    customHabits: [],
+  );
+  await HabitService.upsertHabit(newHabit);
+  return newHabit;
 });
