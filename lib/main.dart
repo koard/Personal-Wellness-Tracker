@@ -58,7 +58,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateChangesProvider);
+    final authState = ref.watch(authStateChangesWithDelayProvider); // Using delay provider for testing
     final locale = ref.watch(languageProvider);
 
     return MaterialApp(
@@ -114,7 +114,22 @@ class MyApp extends ConsumerWidget {
             }
           },
           loading: () => const CustomSplashScreen(),
-          error: (_, __) => const Center(child: Text('Error loading user')),
+          error: (error, stackTrace) {
+            debugPrint('Auth error: $error');
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text('Error loading app', style: TextStyle(fontSize: 18)),
+                  SizedBox(height: 8),
+                  Text('Please restart the application', 
+                       style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
