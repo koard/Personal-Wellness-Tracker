@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
 import '../../widgets/shared/capsule_notification.dart';
+import '../../pages/profile_setup_page.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -54,6 +55,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                       textAlign: TextAlign.center,
                     ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Let\'s set up your profile',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
@@ -64,7 +71,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           if (mounted) {
             Navigator.of(context)
               ..pop() // ปิด dialog
-              ..pop(); // กลับไปหน้า login
+              ..pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const ProfileSetupPage(isFromRegistration: true),
+                ),
+              );
           }
         } else {
           CapsuleNotificationHelper.showError(

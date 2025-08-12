@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
+import '../../providers/daily_content_provider.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
@@ -11,16 +12,24 @@ class DashboardPage extends ConsumerStatefulWidget {
 }
 
 class _DashboardPageState extends ConsumerState<DashboardPage> {
-  int currentCalories = 1500;
-  int targetCalories = 2000;
-  int currentWater = 6;
-  int targetWater = 8;
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
     final l10n = AppLocalizations.of(context)!;
+    
+    // Get AI-generated daily data
+    final dailyContentState = ref.watch(dailyContentProvider);
+    final todayStats = ref.watch(dailyStatsProvider);
+    final todayWaterGoal = ref.watch(todayWaterGoalProvider);
+    final todayActivities = ref.watch(todayActivitiesProvider);
+    final todayMotivation = ref.watch(todayMotivationProvider);
+    
+    // Use AI data or fallback to defaults
+    final targetCalories = todayStats['totalCalories'] > 0 ? todayStats['totalCalories'] : 2000;
+    final currentCalories = 1520; // This would come from logged meals
+    final targetWater = (todayWaterGoal * 4).round(); // Convert liters to glasses
+    final currentWater = 6; // This would come from logged water intake;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -98,75 +107,169 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   ),
                   SizedBox(height: 24),
 
-                  // Today's Activity Section
-                  Text(
-                    l10n.dashboardTodaysActivity,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  _buildActivityCard(
-                    title: l10n.dashboardOngoing,
-                    subtitle: 'Go Jogging 1', // Mock data - not translated
-                    time: '08:00:00',
-                    status: 'ongoing',
-                    duration: l10n.dashboardMinutes(150),
-                  ),
-                  SizedBox(height: 12),
-
-                  _buildActivityCard(
-                    title: l10n.dashboardNext,
-                    subtitle: 'Yoga', // Mock data - not translated
-                    time: '18:00-19:00',
-                    status: 'next',
-                    duration: l10n.dashboardMinutes(120),
-                  ),
-                  SizedBox(height: 24),
-
-                  // Daily Habits Section
+                  // Exercise Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        l10n.dashboardDailyHabits,
+                        'Exercise',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          '+ ${l10n.dashboardAdd}',
-                          style: TextStyle(color: Colors.grey[600]),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // Generate exercise suggestions
+                          ref.read(dailyContentProvider.notifier).generateTodayContent();
+                        },
+                        icon: Icon(Icons.fitness_center, size: 16),
+                        label: Text('Generate'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange[50],
+                          foregroundColor: Colors.orange[700],
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                       ),
                     ],
                   ),
                   SizedBox(height: 12),
 
-                  _buildHabitCard(
-                    'Exercise 1',
-                    l10n.dashboardDaysStreak(10),
-                    true,
-                  ), // Mock data for exercise name
-                  SizedBox(height: 8),
-                  _buildHabitCard(
-                    'Exercise 2',
-                    l10n.dashboardDaysStreak(7),
-                    false,
+                  // Show AI-generated exercises or empty state
+                  if (todayActivities.isNotEmpty) ...[
+                    ...todayActivities.map((activity) => Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: _buildExerciseCard(
+                        name: activity.name,
+                        description: activity.description,
+                        duration: '${activity.durationMinutes} min',
+                        difficulty: activity.difficulty,
+                        category: activity.category,
+                      ),
+                    )).toList(),
+                  ] else ...[
+                    // Empty state for exercises
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.fitness_center, size: 48, color: Colors.grey[400]),
+                          SizedBox(height: 12),
+                          Text(
+                            'No exercises planned',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Tap "Generate" to create personalized workout plan',
+                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: 24),
+
+                  // Daily Challenges Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Daily Challenges',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // Generate daily challenges
+                          ref.read(dailyContentProvider.notifier).generateTodayContent();
+                        },
+                        icon: Icon(Icons.emoji_events, size: 16),
+                        label: Text('Generate'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple[50],
+                          foregroundColor: Colors.purple[700],
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 8),
-                  _buildHabitCard(
-                    'Exercise 3',
-                    l10n.dashboardDaysStreak(5),
-                    false,
-                  ),
+                  SizedBox(height: 12),
+
+                  // Show AI motivation message
+                  if (todayMotivation.isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(12),
+                      margin: EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue[200]!),
+                      ),
+                      child: Text(
+                        todayMotivation,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.blue[700],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                  // Show daily challenges or empty state
+                  if (dailyContentState.todayContent?.habitReminders.isNotEmpty == true) ...[
+                    ...dailyContentState.todayContent!.habitReminders.map((habit) => Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: _buildDailyChallengeCard(
+                        name: habit.name,
+                        description: habit.description,
+                        targetValue: habit.targetValue,
+                        category: habit.category,
+                      ),
+                    )).toList(),
+                  ] else ...[
+                    // Empty state for daily challenges
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.emoji_events, size: 48, color: Colors.grey[400]),
+                          SizedBox(height: 12),
+                          Text(
+                            'No challenges today',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Tap "Generate" to create fun mini-challenges',
+                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   SizedBox(height: 120), // Extra space for floating nav
           ],
         ),
@@ -243,12 +346,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  Widget _buildActivityCard({
-    required String title,
-    required String subtitle,
-    required String time,
-    required String status,
+  Widget _buildExerciseCard({
+    required String name,
+    required String description,
     required String duration,
+    required String difficulty,
+    required String category,
   }) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -270,7 +373,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  name,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -279,46 +382,85 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  subtitle,
+                  description,
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  time,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        duration,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        difficulty,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: status == 'ongoing' ? Colors.green[50] : Colors.blue[50],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: status == 'ongoing' ? Colors.green : Colors.blue,
-                width: 1,
+          Column(
+            children: [
+              IconButton(
+                onPressed: () {
+                  // Mark as complete (save to completed exercises)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Exercise completed! 🎉')),
+                  );
+                  // TODO: Implement completion logic
+                },
+                icon: Icon(Icons.check_circle, color: Colors.green),
+                tooltip: 'Complete',
               ),
-            ),
-            child: Text(
-              duration,
-              style: TextStyle(
-                color: status == 'ongoing'
-                    ? Colors.green[700]
-                    : Colors.blue[700],
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              IconButton(
+                onPressed: () {
+                  // Cancel/Remove this exercise
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Exercise removed')),
+                  );
+                  // TODO: Implement removal logic
+                },
+                icon: Icon(Icons.cancel, color: Colors.red),
+                tooltip: 'Cancel',
               ),
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHabitCard(String title, String streak, bool isCompleted) {
-    final l10n = AppLocalizations.of(context)!;
-
+  Widget _buildDailyChallengeCard({
+    required String name,
+    required String description,
+    required String targetValue,
+    required String category,
+  }) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -339,7 +481,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  name,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -348,40 +490,53 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  streak,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  description,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.purple[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    targetValue,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.purple[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          SizedBox(
-            width: 50,
-            height: 50,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 70,
-                  height: 70,
-                  child: CircularProgressIndicator(
-                    value: isCompleted ? 1.0 : 0.5,
-                    backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      isCompleted ? Colors.green : Colors.orange,
-                    ),
-                    strokeWidth: 5,
-                  ),
-                ),
-                Text(
-                  isCompleted ? l10n.dashboardDone : '50%',
-                  style: TextStyle(
-                    color: isCompleted ? Colors.green[700] : Colors.grey[600],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          Column(
+            children: [
+              IconButton(
+                onPressed: () {
+                  // Mark as complete (save to completed challenges)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Challenge completed! 🏆')),
+                  );
+                  // TODO: Implement completion logic
+                },
+                icon: Icon(Icons.check_circle, color: Colors.green),
+                tooltip: 'Complete',
+              ),
+              IconButton(
+                onPressed: () {
+                  // Cancel/Remove this challenge
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Challenge skipped')),
+                  );
+                  // TODO: Implement removal logic
+                },
+                icon: Icon(Icons.cancel, color: Colors.red),
+                tooltip: 'Skip',
+              ),
+            ],
           ),
         ],
       ),

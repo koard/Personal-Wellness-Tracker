@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../providers/meals_provider.dart';
 import '../../models/meal_model.dart';
 import '../../widgets/shared/image_viewer_modal.dart';
+import '../../widgets/meals/ai_meal_suggestions_card.dart';
 import 'camera_screen.dart';
 import 'debug/debug_gemini_screen.dart';
 import 'package:intl/intl.dart';
@@ -157,6 +158,10 @@ class MealsPage extends ConsumerWidget {
             ),
             SizedBox(height: 24),
 
+            // AI Meal Suggestions
+            AIMealSuggestionsCard(),
+            SizedBox(height: 24),
+
             // Today's Meals
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -250,43 +255,6 @@ class MealsPage extends ConsumerWidget {
                   child: _buildMealCard(context, meal),
                 ),
               ),
-            SizedBox(height: 24),
-
-            // Meal Suggestions
-            Text(
-              "Meal Suggestions",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.colors(context).appForeground,
-              ),
-            ),
-            SizedBox(height: 12),
-
-            _buildSuggestionCard(
-              context,
-              "Quinoa Bowl",
-              "High protein, balanced nutrients",
-              "480 cal",
-              Colors.teal,
-            ),
-            SizedBox(height: 8),
-            _buildSuggestionCard(
-              context,
-              "Smoothie Bowl",
-              "Fresh fruits and nuts",
-              "320 cal",
-              Colors.pink,
-            ),
-            SizedBox(height: 8),
-            _buildSuggestionCard(
-              context,
-              "Avocado Toast",
-              "Healthy fats and fiber",
-              "280 cal",
-              Colors.lime,
-            ),
-
             SizedBox(height: 120), // Space for bottom navigation
           ],
         ),
@@ -510,92 +478,6 @@ class MealsPage extends ConsumerWidget {
           child: Icon(fallbackIcon, color: color, size: 24),
         );
       },
-    );
-  }
-
-  Widget _buildSuggestionCard(
-    BuildContext context,
-    String name,
-    String description,
-    String calories,
-    Color color,
-  ) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.colors(
-          context,
-        ).surfaceBackground.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.colors(
-            context,
-          ).surfaceForeground.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.colors(
-              context,
-            ).mutedBackground.withValues(alpha: 0.1),
-            blurRadius: 15,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(2),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: Offset(2, 0),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.colors(context).surfaceForeground,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.colors(
-                      context,
-                    ).surfaceForeground.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            calories,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

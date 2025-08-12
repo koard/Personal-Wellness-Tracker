@@ -5,6 +5,8 @@ import '../widgets/bottom_navigation_island.dart';
 import '../widgets/shared/app_background.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
+import '../pages/profile_setup_page.dart';
 import 'dashboard/dashboard_page.dart';
 import 'habits/habits_page.dart';
 import 'meals/meals_page.dart';
@@ -49,46 +51,64 @@ class _AuthedLayoutState extends ConsumerState<AuthedLayout> {
           return const SizedBox(); // รอ redirect
         }
 
-        // ✅ ถ้า login อยู่ สร้างหน้าหลักตามปกติ
-        final pageContents = [
-          const DashboardPage(),
-          const HabitsPage(),
-          const MealsPage(),
-          const ProgressPage(),
-          const GoalsPage(),
-          const ProfilePage(),
-        ];
+        // 🔄 Check user profile completion status
+        final userAsyncValue = ref.watch(currentUserProvider);
+        
+        return userAsyncValue.when(
+          data: (userModel) {
+            // If user model exists but profile setup is not complete, redirect to profile setup
+            if (userModel != null && !userModel.isProfileSetupComplete) {
+              return const ProfileSetupPage();
+            }
 
-        // เช็คการเปลี่ยนหน้า
-        ref.listen<int>(currentPageProvider, (previous, next) {
-          if (_pageController.hasClients && previous != next && !_isAnimating) {
-            _isAnimating = true;
-            _pageController.animateToPage(
-              next,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            ).then((_) {
-              _isAnimating = false;
+            // ✅ ถ้า login อยู่และ profile setup เสร็จแล้ว สร้างหน้าหลักตามปกติ
+            final pageContents = [
+              const DashboardPage(),
+              const HabitsPage(),
+              const MealsPage(),
+              const ProgressPage(),
+              const GoalsPage(),
+              const ProfilePage(),
+            ];
+
+            // เช็คการเปลี่ยนหน้า
+            ref.listen<int>(currentPageProvider, (previous, next) {
+              if (_pageController.hasClients && previous != next && !_isAnimating) {
+                _isAnimating = true;
+                _pageController.animateToPage(
+                  next,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                ).then((_) {
+                  _isAnimating = false;
+                });
+              }
             });
-          }
-        });
 
-        return AppBackground(
-          child: Scaffold(
-            extendBody: true,
-            extendBodyBehindAppBar: false,
-            backgroundColor: Colors.transparent, // Make scaffold transparent to show gradient
-            body: PageView(
-              controller: _pageController,
-              onPageChanged: (index) {
-                if (!_isAnimating) {
-                  ref.read(currentPageProvider.notifier).state = index;
-                }
-              },
-              children: pageContents,
-            ),
-            bottomNavigationBar: const BottomNavigationIsland(),
-          ),
+            return AppBackground(
+              child: Scaffold(
+                extendBody: true,
+                extendBodyBehindAppBar: false,
+                backgroundColor: Colors.transparent, // Make scaffold transparent to show gradient
+                body: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    if (!_isAnimating) {
+                      ref.read(currentPageProvider.notifier).state = index;
+                    }
+                  },
+                  children: pageContents,
+                ),
+                bottomNavigationBar: const BottomNavigationIsland(),
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) {
+            // If there's an error loading user data, show profile setup
+            // This handles cases where user document doesn't exist yet
+            return const ProfileSetupPage();
+          },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

@@ -65,11 +65,15 @@ class FirestoreService {
     }
   }
 
-  // Update user profile
+  // Update user profile (now supports onboarding flags)
   static Future<bool> updateUserProfile({
     required String uid,
     String? name,
     String? profileImage,
+    bool? isProfileSetupComplete,
+    bool? isOnboardingComplete,
+    String? preferredLanguage,
+    // Legacy fields for backwards compatibility
     int? age,
     String? gender,
     double? height,
@@ -83,13 +87,18 @@ class FirestoreService {
 
       if (name != null) updateData['name'] = name;
       if (profileImage != null) updateData['profileImage'] = profileImage;
+      if (isProfileSetupComplete != null) updateData['isProfileSetupComplete'] = isProfileSetupComplete;
+      if (isOnboardingComplete != null) updateData['isOnboardingComplete'] = isOnboardingComplete;
+      if (preferredLanguage != null) updateData['preferredLanguage'] = preferredLanguage;
+      
+      // Legacy fields
       if (age != null) updateData['age'] = age;
       if (gender != null) updateData['gender'] = gender;
       if (height != null) updateData['height'] = height;
       if (weight != null) updateData['weight'] = weight;
       if (goal != null) updateData['goal'] = goal;
 
-      await _db.collection(_usersCollection).doc(uid).update(updateData);
+      await _db.collection(_usersCollection).doc(uid).set(updateData, SetOptions(merge: true));
       return true;
     } catch (e) {
       print('Error updating user profile: $e');
