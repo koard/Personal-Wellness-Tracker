@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wellness/models/habit_model.dart';
 import 'package:wellness/providers/habit_provider.dart';
 
-const customIcons = ['📖', '🧘‍♂️', '🎨', '🎸', '📝', '🏆', '📚', '🧹', '🧑‍💻', '🧑‍🍳'];
-
 class LogCustomHabitSheet extends ConsumerStatefulWidget {
   final Habit habit;
   const LogCustomHabitSheet({super.key, required this.habit});
@@ -14,7 +12,7 @@ class LogCustomHabitSheet extends ConsumerStatefulWidget {
 }
 
 class _LogCustomHabitSheetState extends ConsumerState<LogCustomHabitSheet> {
-  String icon = customIcons[0];
+  static const String _defaultIcon = '•';
   String name = '';
   int duration = 10;
   String note = '';
@@ -28,24 +26,9 @@ class _LogCustomHabitSheetState extends ConsumerState<LogCustomHabitSheet> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Add Custom Habit', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: customIcons.map((e) => GestureDetector(
-                  onTap: () => setState(() => icon = e),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: icon == e ? Colors.teal[100] : null,
-                    ),
-                    child: Text(e, style: const TextStyle(fontSize: 28)),
-                  ),
-                )).toList(),
-              ),
               const SizedBox(height: 16),
               TextField(
                 decoration: const InputDecoration(labelText: 'Habit Name'),
@@ -62,23 +45,21 @@ class _LogCustomHabitSheetState extends ConsumerState<LogCustomHabitSheet> {
                 decoration: const InputDecoration(labelText: 'Note (optional)'),
                 onChanged: (val) => note = val,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (name.trim().isEmpty) return;
+                  final newCustomHabit = CustomHabit(
+                    name: name.trim(),
+                    durationMinutes: duration,
+                    note: note.isEmpty ? null : note,
+                    icon: _defaultIcon, 
+                  );
                   final updated = widget.habit.copyWith(
-                    customHabits: [
-                      ...widget.habit.customHabits,
-                      CustomHabit(
-                        name: name.trim(),
-                        durationMinutes: duration,
-                        note: note.isEmpty ? null : note,
-                        icon: icon,
-                      ),
-                    ],
+                    customHabits: [...widget.habit.customHabits, newCustomHabit],
                   );
                   ref.read(submitHabitProvider(updated));
-                  ref.invalidate(habitTodayProvider);
+                  ref.invalidate(habitForDateProvider(widget.habit.date));
                   if (context.mounted) Navigator.pop(context);
                 },
                 child: const Text('Save'),

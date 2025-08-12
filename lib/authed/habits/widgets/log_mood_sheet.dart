@@ -63,7 +63,7 @@ class _LogMoodSheetState extends ConsumerState<LogMoodSheet> {
                   mood: MoodEntry(emoji: emoji, note: note.isEmpty ? null : note),
                 );
                 ref.read(submitHabitProvider(updated));
-                ref.invalidate(habitTodayProvider);
+                ref.invalidate(habitForDateProvider(widget.habit.date));
                 if (context.mounted) Navigator.pop(context);
               },
               child: const Text('Save'),
