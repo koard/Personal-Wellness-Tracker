@@ -11,9 +11,9 @@ class FitnessStep extends ConsumerStatefulWidget {
 }
 
 class _FitnessStepState extends ConsumerState<FitnessStep> {
-  String _selectedFitnessLevel = 'beginner';
+  String _selectedFitnessLevel = ''; // ไม่มีการเลือกเริ่มต้น
   List<String> _selectedActivities = [];
-  double _exerciseIntensity = 3.0;
+  double _exerciseIntensity = 1.0; // เริ่มจากค่าต่ำสุด
 
   final List<FitnessLevelOption> _fitnessLevels = [
     FitnessLevelOption(
@@ -158,12 +158,14 @@ class _FitnessStepState extends ConsumerState<FitnessStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'What activities do you enjoy?',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'What activities do you enjoy?',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],

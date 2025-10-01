@@ -130,7 +130,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage>
       ),
       child: Column(
         children: [
-          // Title and close button
+          // Title and skip button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -142,12 +142,18 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage>
                   color: const Color(0xFF1F2937),
                 ),
               ),
-              // Only show close button if NOT from registration
+              // Show skip button if NOT from registration
               if (!widget.isFromRegistration)
-                IconButton(
-                  onPressed: () => _showExitConfirmation(context),
-                  icon: const Icon(Icons.close),
-                  color: const Color(0xFF6B7280),
+                TextButton(
+                  onPressed: () => _skipToHome(context),
+                  child: Text(
+                    'Skip',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -375,26 +381,8 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage>
     );
   }
 
-  void _showExitConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Exit Setup?'),
-        content: const Text('Your progress will be lost. Are you sure you want to exit?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Exit'),
-          ),
-        ],
-      ),
-    );
+  void _skipToHome(BuildContext context) {
+    // Navigate directly to authed layout (home)
+    Navigator.of(context).pushNamedAndRemoveUntil('/authed', (route) => false);
   }
 }

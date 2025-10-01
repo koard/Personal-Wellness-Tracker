@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../auth/screens/login_screen.dart';
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
@@ -12,10 +13,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   final _controller = PageController();
   int _index = 0;
 
-  final List<_OnboardData> _pages = const [
-    _OnboardData(image: 'lib/assets/onboarding/slide1.png'),
-    _OnboardData(image: 'lib/assets/onboarding/slide2.png'),
-    _OnboardData(image: 'lib/assets/onboarding/slide3.png'),
+  List<_OnboardData> get _pages => [
+    const _OnboardData(image: 'lib/assets/onboarding/slide1.png'),
+    const _OnboardData(image: 'lib/assets/onboarding/slide2.png'),
+    const _OnboardData(image: 'lib/assets/onboarding/slide3.png'),
   ];
 
   void _next() {
@@ -33,14 +34,20 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     final sp = await SharedPreferences.getInstance();
     await sp.setBool('onboarding_done', true);
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/authed', (r) => false);
+    // ไปหน้า Login โดยตรง เพื่อลดปัญหาลูปเมื่อเปิดโหมด force onboarding
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
 
   Future<void> _skip() async {
     final sp = await SharedPreferences.getInstance();
     await sp.setBool('onboarding_done', true);
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/authed', (r) => false);
+    // ไปหน้า Login โดยตรง เพื่อลดปัญหาลูปเมื่อเปิดโหมด force onboarding
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
 
   Widget _buildDots() {
@@ -51,12 +58,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           margin: const EdgeInsets.symmetric(horizontal: 5),
-            height: 8,
-            width: active ? 22 : 8,
-            decoration: BoxDecoration(
-              color: active ? const Color(0xFF2563EB) : const Color(0xFF2563EB).withOpacity(.30),
-              borderRadius: BorderRadius.circular(30),
-            ),
+          height: 8,
+          width: active ? 22 : 8,
+          decoration: BoxDecoration(
+            color: active 
+                ? Theme.of(context).primaryColor 
+                : Theme.of(context).primaryColor.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(30),
+          ),
         );
       }),
     );
@@ -84,15 +93,18 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 itemBuilder: (_, i) {
                   final p = _pages[i];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     child: Center(
                       child: Hero(
                         tag: 'onboard_$i',
                         child: Image.asset(
                           p.image,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.image_not_supported, size: 120, color: Colors.grey),
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.image_not_supported,
+                            size: 120,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
                       ),
                     ),
@@ -101,22 +113,37 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               ),
             ),
             _buildDots(),
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
                   TextButton(
-                    onPressed: _skip,
-                    child: const Text('Skip', style: TextStyle(color: Color(0xFF475569))),
+                    onPressed: () {
+                      if (_index == 0) {
+                        _skip();
+                      } else {
+                        _controller.previousPage(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOut,
+                        );
+                      }
+                    },
+                    child: Text(
+                      _index == 0 ? 'Skip' : 'Back',
+                      style: const TextStyle(
+                        color: Colors.black87, // visible on white background
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                   const Spacer(),
                   ElevatedButton(
                     onPressed: _next,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      backgroundColor: const Color(0xFF2563EB),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
                     ),
@@ -125,7 +152,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 ],
               ),
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -135,5 +162,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
 class _OnboardData {
   final String image;
+  
   const _OnboardData({required this.image});
 }

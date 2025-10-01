@@ -122,12 +122,14 @@ class _HealthStepState extends ConsumerState<HealthStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'Any health considerations?',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'Any health considerations?',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],

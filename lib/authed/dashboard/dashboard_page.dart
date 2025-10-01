@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/daily_content_provider.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/user_profile_provider.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
@@ -14,22 +15,26 @@ class DashboardPage extends ConsumerStatefulWidget {
 class _DashboardPageState extends ConsumerState<DashboardPage> {
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
+    // User name from Firestore (fallback to generic label)
+    final userAsync = ref.watch(currentUserProvider);
+    final userName = userAsync.maybeWhen(
+      data: (u) => (u?.name?.isNotEmpty == true)
+          ? u!.name!
+          : (u?.email?.isNotEmpty == true ? u!.email!.split('@').first : 'User'),
+      orElse: () => 'User',
+    );
     final l10n = AppLocalizations.of(context)!;
     
     // Get AI-generated daily data
     final dailyContentState = ref.watch(dailyContentProvider);
-    final todayStats = ref.watch(dailyStatsProvider);
-    final todayWaterGoal = ref.watch(todayWaterGoalProvider);
     final todayActivities = ref.watch(todayActivitiesProvider);
     final todayMotivation = ref.watch(todayMotivationProvider);
+  final targets = ref.watch(userTargetGoalsProvider);
     
     // Use AI data or fallback to defaults
-    final targetCalories = todayStats['totalCalories'] > 0 ? todayStats['totalCalories'] : 2000;
-    final currentCalories = 1520; // This would come from logged meals
-    final targetWater = (todayWaterGoal * 4).round(); // Convert liters to glasses
-    final currentWater = 6; // This would come from logged water intake;
+  // Prefer explicit targets from profile; if daily content totals are higher, keep them for display insight only
+  final targetCalories = targets['targetCalories']!.round();
+  final currentCalories = 0; // TODO: wire from logged meals collection when available
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -68,6 +73,39 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+                  // Loading/Error states for daily content
+                  if (dailyContentState.isLoading || dailyContentState.isGenerating)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: LinearProgressIndicator(minHeight: 4),
+                    ),
+                  if (dailyContentState.error != null)
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(12),
+                      margin: EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red[700]),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              dailyContentState.error!,
+                              style: TextStyle(color: Colors.red[800]),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => ref.read(dailyContentProvider.notifier).refreshContent(),
+                            child: Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
                   // Dashboard Title
                   Text(
                     l10n.dashboardTitle,
@@ -96,11 +134,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       Expanded(
                         child: _buildTrackingCard(
                           title: l10n.dashboardWater,
-                          current: currentWater,
-                          target: targetWater,
+                          // Use liters for display: 0 / 3.1 L
+                          current: 0,
+                          target: 31, // unused for display; progress overridden
                           unit: "",
                           color: Colors.blue,
                           icon: Icons.water_drop,
+                          valueLabel: '0/3.1 L',
+                          progressOverride: 0.0 / 3.1,
                         ),
                       ),
                     ],
@@ -284,8 +325,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     required String unit,
     required Color color,
     required IconData icon,
+    String? valueLabel,
+    double? progressOverride,
   }) {
-    double progress = current / target;
+    double progress = progressOverride ?? (target > 0 ? current / target : 0.0);
     if (progress > 1) progress = 1;
 
     return Container(
@@ -320,7 +363,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           ),
           SizedBox(height: 12),
           Text(
-            '$current/$target',
+            valueLabel ?? '$current/$target',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

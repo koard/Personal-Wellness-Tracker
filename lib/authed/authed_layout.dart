@@ -105,9 +105,26 @@ class _AuthedLayoutState extends ConsumerState<AuthedLayout> {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) {
-            // If there's an error loading user data, show profile setup
-            // This handles cases where user document doesn't exist yet
-            return const ProfileSetupPage();
+            // If there's an error loading user data (e.g., Firestore PERMISSION_DENIED),
+            // don't force Profile Setup. Show a lightweight error with retry.
+            return AppBackground(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Unable to load user data.'),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        // trigger re-fetch
+                        ref.invalidate(currentUserProvider);
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           },
         );
       },

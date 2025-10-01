@@ -62,11 +62,15 @@ flutter:
     - lib/assets/onboarding/
 
 flutter_native_splash:
-  background_image: lib/assets/background-dark.png   # รูปพื้นหลัง (เต็มจอ)
-  image: lib/assets/splash_icon.png            # โลโก้ตรงกลาง
+  background_image: "lib/assets/background-dark.png"
+  image: "lib/assets/splash_icon.png"
   android: true
   ios: true
   web: true
   fullscreen: true
   android_gravity: center
   ios_content_mode: center
+  web_image_mode: center
+  android_12:
+    image: "lib/assets/splash_icon.png"
+    color: "#4a3c8a"

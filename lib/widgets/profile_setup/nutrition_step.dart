@@ -197,12 +197,14 @@ class _NutritionStepState extends ConsumerState<NutritionStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'Food preferences & nutrition',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'Food preferences & nutrition',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],

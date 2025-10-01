@@ -145,6 +145,8 @@ class HabitsPage extends ConsumerWidget {
   }
 
   Widget _waterCard(Habit habit, DateTime date, WidgetRef ref) {
+    // Mock target goal: 3.1 L (display and progress)
+    const double mockWaterGoalLiters = 3.1;
     return Padding(
       padding: const EdgeInsets.only(top: 18),
       child: _buildCard(
@@ -159,7 +161,7 @@ class HabitsPage extends ConsumerWidget {
               children: [
                 const SizedBox(width: 8),
                 Text(
-                  '${habit.waterLiters.toStringAsFixed(2)} / ${habit.waterGoalLiters.toStringAsFixed(1)} L',
+                  '${habit.waterLiters.toStringAsFixed(2)} / ${mockWaterGoalLiters.toStringAsFixed(1)} L',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -168,7 +170,7 @@ class HabitsPage extends ConsumerWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(5),
               child: LinearProgressIndicator(
-                value: (habit.waterLiters / habit.waterGoalLiters).clamp(0.0, 1.0),
+                value: (habit.waterLiters / mockWaterGoalLiters).clamp(0.0, 1.0),
                 backgroundColor: Colors.grey[300],
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                 minHeight: 10,
@@ -187,6 +189,7 @@ class HabitsPage extends ConsumerWidget {
               onPressed: () {
                 final updated = habit.copyWith(
                   waterLiters: (habit.waterLiters + 0.25).clamp(0, 5.0),
+                  waterGoalLiters: mockWaterGoalLiters,
                 );
                 ref.read(submitHabitProvider(updated));
                 ref.invalidate(habitForDateProvider(date));

@@ -13,7 +13,8 @@ import 'auth/screens/register_screen.dart';
 import 'authed/authed_layout.dart';
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
-import 'widgets/shared/app_background.dart';
+import 'providers/user_provider.dart';
+import 'pages/profile_setup_page.dart';
 import 'authed/onboarding/onboarding_flow.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,7 +66,8 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateChangesWithDelayProvider); // Using delay provider for testing
+  // Use stable auth state provider per project conventions (no artificial delay)
+  final authState = ref.watch(authStateChangesProvider);
     final locale = ref.watch(languageProvider);
 
     return MaterialApp(
@@ -111,23 +113,46 @@ class MyApp extends ConsumerWidget {
         '/authed': (c) => const AuthedLayout(),
         '/onboarding': (c) => const OnboardingFlow(),
       },
+      // Debug: force onboarding every launch for QA
       home: FutureBuilder<bool>(
         future: _isOnboardingDone(),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
             return const SizedBox.shrink();
           }
-          final done = snap.data ?? false;
-          return AppBackground(
-            child: authState.when(
-              data: (user) {
-                if (user == null) return const LoginScreen();
-                if (!done) return const OnboardingFlow();
-                return const AuthedLayout();
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const Center(child: Text('Error loading app')),
-            ),
+          final onboardingDone = EnvConfig.forceOnboardingEveryLaunch ? false : (snap.data ?? false);
+
+          // 1) Onboarding first (once)
+          if (!onboardingDone) {
+            return const OnboardingFlow();
+          }
+
+          // 2) Auth: Login/Register
+          return authState.when(
+            data: (user) {
+              if (user == null) return const LoginScreen();
+
+              // 3) After auth, check profile setup flag from user doc
+              return Consumer(
+                builder: (context, ref, _) {
+                  final userDoc = ref.watch(currentUserProvider);
+                  return userDoc.when(
+                    data: (u) {
+                      final isComplete = u?.isProfileSetupComplete ?? false;
+                      if (!isComplete) {
+                        return const ProfileSetupPage();
+                      }
+                      // 4) Home (AuthedLayout)
+                      return const AuthedLayout();
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const AuthedLayout(), // fallback to home; AuthedLayout will handle
+                  );
+                },
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const Center(child: Text('Error loading app')),
           );
         },
       ),

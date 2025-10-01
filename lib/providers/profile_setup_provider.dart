@@ -68,26 +68,26 @@ class ProfileSetupNotifier extends StateNotifier<ProfileSetupState> {
     return UserProfile(
       userId: '',
       name: '',
-      age: 25,
-      gender: 'other',
-      weight: 70.0,
-      height: 170.0,
-      primaryGoal: 'general_fitness',
+      age: 0, // ไม่มีค่าเริ่มต้น
+      gender: '', // ไม่มีการเลือกเริ่มต้น
+      weight: 75.0, // ตรงกลางของช่วง 30-120 kg
+      height: 160.0, // ตรงกลางของช่วง 120-200 cm
+      primaryGoal: '', // ไม่มีการเลือกเริ่มต้น
       secondaryGoals: const [],
-      fitnessLevel: 'beginner',
-      availableWorkoutTime: 30,
+      fitnessLevel: '', // ไม่มีการเลือกเริ่มต้น
+      availableWorkoutTime: 0, // ไม่มีค่าเริ่มต้น
       preferredActivities: const [],
-      targetSleepHours: 8,
-      preferredBedtime: const TimeOfDay(hour: 22, minute: 0),
-      preferredWakeup: const TimeOfDay(hour: 6, minute: 0),
-      workSchedule: 'flexible',
-      activityLevel: 'lightly_active',
+      targetSleepHours: 8, // ค่าเริ่มต้นในช่วงที่เหมาะสม (6-10 ชั่วโมง)
+      preferredBedtime: const TimeOfDay(hour: 0, minute: 0), // จะให้ผู้ใช้เลือกเอง
+      preferredWakeup: const TimeOfDay(hour: 0, minute: 0), // จะให้ผู้ใช้เลือกเอง
+      workSchedule: '', // ไม่มีการเลือกเริ่มต้น
+      activityLevel: '', // ไม่มีการเลือกเริ่มต้น
       healthConditions: const [],
       dietaryPreferences: DietaryPreferences(),
       sleepPreferences: SleepPreferences(),
       targetCalories: 0.0,
       targetWaterIntake: 0.0,
-      exerciseIntensity: 3,
+      exerciseIntensity: 3, // ตรงกลางของช่วง 1-5
       isProfileComplete: false,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

@@ -11,17 +11,14 @@ class LifestyleStep extends ConsumerStatefulWidget {
 }
 
 class _LifestyleStepState extends ConsumerState<LifestyleStep> {
-  String _selectedWorkSchedule = 'flexible';
-  int _selectedWorkoutTime = 30;
-  String _selectedActivityLevel = 'lightly_active';
+  String _selectedWorkSchedule = ''; // ไม่มีการเลือกเริ่มต้น
+  int _selectedWorkoutTime = 0; // ไม่มีค่าเริ่มต้น
+  String _selectedActivityLevel = ''; // ไม่มีการเลือกเริ่มต้น
 
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(profileSetupProvider).profile;
-    _selectedWorkSchedule = profile.workSchedule;
-    _selectedWorkoutTime = profile.availableWorkoutTime;
-    _selectedActivityLevel = profile.activityLevel;
+    // ลบการโหลดค่าเริ่มต้นจาก profile
   }
 
   @override
@@ -61,12 +58,14 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'Tell us about your lifestyle',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'Tell us about your lifestyle',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],

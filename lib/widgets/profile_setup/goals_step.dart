@@ -11,7 +11,7 @@ class GoalsStep extends ConsumerStatefulWidget {
 }
 
 class _GoalsStepState extends ConsumerState<GoalsStep> {
-  String _selectedPrimaryGoal = 'general_fitness';
+  String _selectedPrimaryGoal = ''; // ไม่มีการเลือกเริ่มต้น
   List<String> _selectedSecondaryGoals = [];
 
   final List<GoalOption> _primaryGoals = [
@@ -156,12 +156,14 @@ class _GoalsStepState extends ConsumerState<GoalsStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'What\'s your main wellness goal?',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'What\'s your main wellness goal?',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],
@@ -205,7 +207,7 @@ class _GoalsStepState extends ConsumerState<GoalsStep> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 1.2,
+              childAspectRatio: 1.0,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
@@ -307,7 +309,7 @@ class _GoalsStepState extends ConsumerState<GoalsStep> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected ? goal.color.withOpacity(0.1) : Colors.white,
           border: Border.all(
@@ -329,32 +331,34 @@ class _GoalsStepState extends ConsumerState<GoalsStep> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isSelected ? goal.color : goal.color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 goal.icon,
                 color: isSelected ? Colors.white : goal.color,
-                size: 24,
+                size: 20,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               goal.title,
               style: GoogleFonts.inter(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isSelected ? goal.color : const Color(0xFF1F2937),
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               goal.description,
               style: GoogleFonts.inter(
-                fontSize: 11,
+                fontSize: 10,
                 color: const Color(0xFF6B7280),
               ),
               textAlign: TextAlign.center,
@@ -446,6 +450,8 @@ class _GoalsStepState extends ConsumerState<GoalsStep> {
                         : const Color(0xFF9CA3AF),
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 2),
             Text(

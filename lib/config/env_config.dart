@@ -20,6 +20,8 @@ class EnvConfig {
   
   // Gemini AI Configuration
   static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+  static bool get forceOnboardingEveryLaunch =>
+      (dotenv.env['FORCE_ONBOARDING_EVERY_LAUNCH'] ?? 'false').toLowerCase() == 'true';
   
   /// Load environment variables
   static Future<void> load() async {

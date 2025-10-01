@@ -13,20 +13,16 @@ class BasicInfoStep extends ConsumerStatefulWidget {
 class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
   late TextEditingController _nameController;
   late TextEditingController _ageController;
-  String _selectedGender = 'other';
-  double _height = 170.0;
-  double _weight = 70.0;
+  String _selectedGender = '';
+  double _height = 160.0; // เริ่มจากตรงกลาง
+  double _weight = 50.0; // เริ่มจากตรงกลาง
   bool _useMetric = true;
 
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(profileSetupProvider).profile;
-    _nameController = TextEditingController(text: profile.name);
-    _ageController = TextEditingController(text: profile.age.toString());
-    _selectedGender = profile.gender;
-    _height = profile.height;
-    _weight = profile.weight;
+    _nameController = TextEditingController();
+    _ageController = TextEditingController();
   }
 
   @override
@@ -76,12 +72,14 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'Let\'s get to know you',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'Let\'s get to know you',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],
@@ -108,12 +106,28 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
               onChanged: (value) {
                 notifier.updateBasicInfo(name: value);
               },
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: const Color(0xFF1F2937),
+              ),
               decoration: InputDecoration(
                 hintText: 'Enter your name',
-                prefixIcon: const Icon(Icons.person_outline),
+                hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                ),
+                prefixIcon: const Icon(
+                  Icons.person_outline,
+                  color: Color(0xFF6B7280),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF9FAFB),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                  borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -136,13 +150,32 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
                 final age = int.tryParse(value) ?? 25;
                 notifier.updateBasicInfo(age: age);
               },
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: const Color(0xFF1F2937),
+              ),
               decoration: InputDecoration(
                 hintText: 'Enter your age',
-                prefixIcon: const Icon(Icons.cake_outlined),
+                hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                ),
+                prefixIcon: const Icon(
+                  Icons.cake_outlined,
+                  color: Color(0xFF6B7280),
+                ),
                 suffixText: 'years',
+                suffixStyle: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF9FAFB),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                  borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -244,9 +277,9 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
                   ),
                   child: Slider(
                     value: _height,
-                    min: _useMetric ? 100 : 3.28,
-                    max: _useMetric ? 250 : 8.20,
-                    divisions: _useMetric ? 150 : 148,
+                    min: _useMetric ? 120 : 3.94,
+                    max: _useMetric ? 200 : 6.56,
+                    divisions: _useMetric ? 80 : 82,
                     activeColor: const Color(0xFF3B82F6),
                     inactiveColor: const Color(0xFFE5E7EB),
                     onChanged: (value) {
@@ -307,8 +340,8 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
                   child: Slider(
                     value: _weight,
                     min: _useMetric ? 30 : 66,
-                    max: _useMetric ? 200 : 440,
-                    divisions: _useMetric ? 170 : 374,
+                    max: _useMetric ? 120 : 264,
+                    divisions: _useMetric ? 90 : 198,
                     activeColor: const Color(0xFF10B981),
                     inactiveColor: const Color(0xFFE5E7EB),
                     onChanged: (value) {
@@ -361,9 +394,10 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFF9FAFB),
             border: Border.all(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFD1D5DB),
+              width: 1.5,
             ),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -409,7 +443,11 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFF9FAFB),
+          border: isSelected ? null : Border.all(
+            color: const Color(0xFFD1D5DB),
+            width: 1,
+          ),
           borderRadius: BorderRadius.circular(6),
           boxShadow: isSelected ? [
             BoxShadow(
@@ -424,7 +462,7 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF6B7280),
+            color: isSelected ? Colors.white : const Color(0xFF6B7280),
           ),
         ),
       ),

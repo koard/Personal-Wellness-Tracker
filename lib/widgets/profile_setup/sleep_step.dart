@@ -12,10 +12,10 @@ class SleepStep extends ConsumerStatefulWidget {
 }
 
 class _SleepStepState extends ConsumerState<SleepStep> {
-  int _targetSleepHours = 8;
-  TimeOfDay _preferredBedtime = const TimeOfDay(hour: 22, minute: 0);
-  TimeOfDay _preferredWakeup = const TimeOfDay(hour: 6, minute: 0);
-  int _currentSleepQuality = 3;
+  int _targetSleepHours = 0; // ไม่มีค่าเริ่มต้น ให้ผู้ใช้เลือก
+  TimeOfDay _preferredBedtime = const TimeOfDay(hour: 0, minute: 0); // ให้ผู้ใช้เลือกเอง
+  TimeOfDay _preferredWakeup = const TimeOfDay(hour: 0, minute: 0); // ให้ผู้ใช้เลือกเอง
+  int _currentSleepQuality = 0; // ไม่มีค่าเริ่มต้น
   List<String> _sleepChallenges = [];
 
   final List<SleepChallengeOption> _sleepChallengeOptions = [
@@ -111,12 +111,14 @@ class _SleepStepState extends ConsumerState<SleepStep> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      'Let\'s optimize your rest',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    Expanded(
+                      child: Text(
+                        'Let\'s optimize your rest',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                     ),
                   ],
