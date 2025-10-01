@@ -13,6 +13,7 @@ dependencies:
   # Firebase
   firebase_core: ^2.25.4
   firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
 
   # Riverpod for state management
   flutter_riverpod: ^2.5.1
@@ -26,13 +27,46 @@ dependencies:
   # Environment variables
   flutter_dotenv: ^5.1.0
 
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+  # For storing language preferences
+  shared_preferences: ^2.2.2
+
+  # Camera and AI functionality
+  camera: ^0.10.5+5
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  google_generative_ai: ^0.2.2
+
+  # For animations and icons
+  lottie: ^3.3.1
+  flutter_svg: ^2.0.10+1
+  hugeicons: ^0.0.11
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6
 
 flutter:
+  generate: true
   uses-material-design: true
   
   assets:
     - .env
+    - lib/assets/
+    - lib/assets/onboarding/
+
+flutter_native_splash:
+  background_image: lib/assets/background-dark.png   # รูปพื้นหลัง (เต็มจอ)
+  image: lib/assets/splash_icon.png            # โลโก้ตรงกลาง
+  android: true
+  ios: true
+  web: true
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: center

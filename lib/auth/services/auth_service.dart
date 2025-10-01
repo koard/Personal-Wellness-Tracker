@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/firestore_service.dart';
 import 'dart:developer' as developer;
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
@@ -17,15 +18,37 @@ class AuthService {
     }
   }
 
-  Future<bool> registerWithEmail({required String email, required String password}) async {
+  Future<bool> registerWithEmail({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      // Create user document in Firestore
+      if (userCredential.user != null) {
+        final success = await FirestoreService.createUserFromAuth(userCredential.user!);
+        if (!success) {
+          developer.log('Failed to create user document in Firestore', name: 'AuthService');
+        }
+      }
+      
       return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw Exception('This email is already registered.');
+      } else {
+        throw Exception(e.message ?? 'An unknown error occurred.');
+      }
     } catch (e) {
-      developer.log('Register error: $e', name: 'AuthService');
+      developer.log('Registration error: $e', name: 'AuthService');
       return false;
     }
   }
+
 
   Future<void> signOut() async => _auth.signOut();
 

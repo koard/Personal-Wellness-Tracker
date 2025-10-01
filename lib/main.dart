@@ -1,19 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:camera/camera.dart';
+import 'l10n/app_localizations.dart';
 import 'firebase_options.dart';
 import 'config/env_config.dart';
-import 'auth/screens/login_screen.dart'; // ชั่วคราว ใช้ login เป็น home ก่อน
+import 'config/app_theme.dart';
+import 'auth/screens/login_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth/screens/register_screen.dart';
-import 'dashboard/screens/dashboard_screen.dart'; // สมมุติหน้าหลักหลังล็อกอิน
+import 'authed/authed_layout.dart';
 import 'providers/auth_provider.dart';
+import 'providers/language_provider.dart';
+import 'widgets/shared/app_background.dart';
+import 'authed/onboarding/onboarding_flow.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Global cameras variable
+late List<CameraDescription> cameras;
+
+// Custom page transition builder with no animation
+class NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
+  @override
+  Widget buildTransitions<T extends Object?>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
+  }
+}
+
+// เพิ่มฟังก์ชันตรวจ onboarding
+Future<bool> _isOnboardingDone() async {
+  final sp = await SharedPreferences.getInstance();
+  return sp.getBool('onboarding_done') ?? false;
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   // Load environment variables
   await EnvConfig.load();
+
+  // Initialize cameras
+  try {
+    cameras = await availableCameras();
+  } catch (e) {
+    cameras = [];
+  }
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const ProviderScope(child: MyApp()));
@@ -24,37 +65,72 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateChangesProvider);
+    final authState = ref.watch(authStateChangesWithDelayProvider); // Using delay provider for testing
+    final locale = ref.watch(languageProvider);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wellness Tracker',
-      theme: ThemeData(
-        textTheme: GoogleFonts.poppinsTextTheme(
-          Theme.of(context).textTheme,
+
+      // Localization support
+      locale: locale,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en'), Locale('th')],
+
+      // Use custom themes with dark as default
+      theme: AppTheme.lightTheme.copyWith(
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.windows: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.macOS: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.linux: NoAnimationPageTransitionsBuilder(),
+          },
         ),
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
       ),
+      darkTheme: AppTheme.darkTheme.copyWith(
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.windows: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.macOS: NoAnimationPageTransitionsBuilder(),
+            TargetPlatform.linux: NoAnimationPageTransitionsBuilder(),
+          },
+        ),
+      ),
+      themeMode: ThemeMode.dark, // Default to dark theme
       routes: {
-        '/register': (context) => const RegisterScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
-        // '/onboarding': (context) => const OnboardingScreen(), // ภายหลัง
+        '/register': (c) => const RegisterScreen(),
+        '/authed': (c) => const AuthedLayout(),
+        '/onboarding': (c) => const OnboardingFlow(),
       },
-      home: authState.when(
-        data: (user) {
-          if (user != null) {
-            return const DashboardScreen();
-          } else {
-            return const LoginScreen();
+      home: FutureBuilder<bool>(
+        future: _isOnboardingDone(),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const SizedBox.shrink();
           }
+          final done = snap.data ?? false;
+          return AppBackground(
+            child: authState.when(
+              data: (user) {
+                if (user == null) return const LoginScreen();
+                if (!done) return const OnboardingFlow();
+                return const AuthedLayout();
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const Center(child: Text('Error loading app')),
+            ),
+          );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const Center(child: Text('Error loading user')),
       ),
     );
-      
   }
 }
