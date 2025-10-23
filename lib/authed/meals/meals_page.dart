@@ -9,8 +9,13 @@ import '../../models/meal_model.dart';
 import '../../widgets/shared/image_viewer_modal.dart';
 import '../../widgets/meals/ai_meal_suggestions_card.dart';
 import 'camera_screen.dart';
+import 'recognition/recognition_screen.dart';
 import 'debug/debug_gemini_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import '../../widgets/shared/capsule_notification.dart';
 
 class MealsPage extends ConsumerWidget {
   const MealsPage({super.key});
@@ -158,10 +163,6 @@ class MealsPage extends ConsumerWidget {
             ),
             SizedBox(height: 24),
 
-            // AI Meal Suggestions
-            AIMealSuggestionsCard(),
-            SizedBox(height: 24),
-
             // Today's Meals
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,13 +176,7 @@ class MealsPage extends ConsumerWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const CameraScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: () => _showAddMealOptions(context, ref),
                   child: Text(
                     "+ Add Meal",
                     style: TextStyle(
@@ -255,11 +250,85 @@ class MealsPage extends ConsumerWidget {
                   child: _buildMealCard(context, meal),
                 ),
               ),
+            SizedBox(height: 24),
+
+            // AI Meal Suggestions (moved below the logged meals)
+            AIMealSuggestionsCard(),
             SizedBox(height: 120), // Space for bottom navigation
           ],
         ),
       ),
     );
+  }
+
+  void _showAddMealOptions(BuildContext context, WidgetRef ref) {
+    final parentContext = context; // Preserve page context for navigation
+    showModalBottomSheet(
+      context: parentContext,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  Navigator.of(parentContext).push(
+                    MaterialPageRoute(
+                      builder: (context) => const CameraScreen(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _pickFromGallery(parentContext);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickFromGallery(BuildContext context) async {
+    try {
+      final picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return; // User canceled
+
+      // Copy to app documents directory /meals for consistency
+      final directory = await getApplicationDocumentsDirectory();
+      final mealsDir = path.join(directory.path, 'meals');
+      await Directory(mealsDir).create(recursive: true);
+
+      final fileName =
+          'meal_${DateTime.now().millisecondsSinceEpoch}${path.extension(file.path)}';
+      final newPath = path.join(mealsDir, fileName);
+      await File(file.path).copy(newPath);
+
+      if (!context.mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => RecognitionScreen(imagePath: newPath),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      CapsuleNotificationHelper.showError(
+        context,
+        message: 'Failed to pick image. Please try again.',
+      );
+    }
   }
 
   Widget _buildNutrientCard(

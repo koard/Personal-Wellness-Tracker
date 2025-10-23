@@ -39,7 +39,8 @@ dependencies:
   camera: ^0.10.5+5
   path_provider: ^2.1.1
   path: ^1.8.3
-  google_generative_ai: ^0.2.2
+  google_generative_ai: ^0.4.7
+  image_picker: ^1.0.7
 
   # For animations and icons
   lottie: ^3.3.1

@@ -140,7 +140,8 @@ class MyApp extends ConsumerWidget {
                     data: (u) {
                       final isComplete = u?.isProfileSetupComplete ?? false;
                       if (!isComplete) {
-                        return const ProfileSetupPage();
+                        // Mandatory initial profile setup flow
+                        return const ProfileSetupPage(isFromRegistration: true);
                       }
                       // 4) Home (AuthedLayout)
                       return const AuthedLayout();

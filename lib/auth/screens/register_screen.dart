@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
-import '../../widgets/shared/capsule_notification.dart';
 import '../../pages/profile_setup_page.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -68,7 +66,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ..pop() // ปิด dialog
               ..pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const ProfileSetupPage(),
+                  builder: (context) => const ProfileSetupPage(
+                    isFromRegistration: true,
+                  ),
                 ),
               );
           }

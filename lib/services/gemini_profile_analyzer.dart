@@ -13,7 +13,7 @@ class GeminiProfileAnalyzer {
 
   static GenerativeModel get model {
     _model ??= GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       apiKey: EnvConfig.geminiApiKey,
       generationConfig: GenerationConfig(
         temperature: 0.7,
@@ -177,6 +177,17 @@ Consider:
 7. Work-life balance for Thai professionals
 
 Provide practical, culturally appropriate recommendations that fit a busy Thai lifestyle.
+
+STRICT OUTPUT REQUIREMENTS:
+- Respond with ONLY a single JSON object.
+- Do NOT include markdown code fences, backticks, or any commentary.
+- Do NOT include trailing commas.
+- Keep field names exactly as specified.
+- Keep responses concise:
+- Limit weeklyExercisePlan to exactly 7 items (one per day).
+- Limit weeklyMealSuggestions to at most 14 items total (no more than 2 per day).
+- Limit arrays of strings (like tips, exercises, ingredients, benefits) to max 5 items each.
+- Keep text fields under 20 words each to reduce size.
 ''';
   }
 
@@ -186,13 +197,9 @@ Provide practical, culturally appropriate recommendations that fit a busy Thai l
       // Clean up the response text
       String cleanResponse = response.trim();
       
-      // Remove markdown code block formatting if present
-      if (cleanResponse.startsWith('```json')) {
-        cleanResponse = cleanResponse.substring(7);
-      }
-      if (cleanResponse.endsWith('```')) {
-        cleanResponse = cleanResponse.substring(0, cleanResponse.length - 3);
-      }
+      // Remove any markdown code block formatting anywhere
+      cleanResponse = cleanResponse.replaceAll(RegExp(r"```json", caseSensitive: false), '');
+      cleanResponse = cleanResponse.replaceAll('```', '');
       
       // Try to find JSON content
       int jsonStart = cleanResponse.indexOf('{');

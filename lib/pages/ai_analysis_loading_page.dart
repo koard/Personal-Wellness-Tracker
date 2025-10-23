@@ -169,6 +169,7 @@ class _AIAnalysisLoadingPageState extends ConsumerState<AIAnalysisLoadingPage> {
             padding: const EdgeInsets.all(24.0),
             child: SingleChildScrollView(
               child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // Header
                 const SizedBox(height: 40),
@@ -196,21 +197,19 @@ class _AIAnalysisLoadingPageState extends ConsumerState<AIAnalysisLoadingPage> {
                 
                 const SizedBox(height: 60),
                 
-                // Loading animation
-                const Expanded(
-                  child: AILoadingAnimation(
-                    initialMessage: 'Analyzing your profile...',
-                    progressMessages: [
-                      'Analyzing your profile...',
-                      'Calculating your BMR and TDEE...',
-                      'Creating personalized meal suggestions...',
-                      'Designing your activity plans...',
-                      'Optimizing for your goals...',
-                      'Generating wellness insights...',
-                      'Almost ready...',
-                    ],
-                    messageDuration: Duration(seconds: 4),
-                  ),
+                // Loading animation (avoid Expanded inside scroll views)
+                const AILoadingAnimation(
+                  initialMessage: 'Analyzing your profile...',
+                  progressMessages: [
+                    'Analyzing your profile...',
+                    'Calculating your BMR and TDEE...',
+                    'Creating personalized meal suggestions...',
+                    'Designing your activity plans...',
+                    'Optimizing for your goals...',
+                    'Generating wellness insights...',
+                    'Almost ready...',
+                  ],
+                  messageDuration: Duration(seconds: 4),
                 ),
                 
                 const SizedBox(height: 40),
